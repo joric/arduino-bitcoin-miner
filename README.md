@@ -2,6 +2,8 @@
 
 Arduino Bitcoin Miner
 
+![arduino-bitcoin-miner](https://i.imgur.com/tzfPink.jpg)
+
 ## Usage
 
 ### Arduino
