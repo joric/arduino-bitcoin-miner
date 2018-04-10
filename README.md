@@ -10,33 +10,31 @@ Arduino Bitcoin Miner
 
 
 Build and upload sketch in Arduino IDE.
-
 Start bfgminer using Arduino COM port, e.g. for bitcoin-in-a-box and COM5:
 
 `bfgminer -o http://localhost:19001 -u admin1 -p 123 -S icarus:\\.\COM5`
 
-Arduino will work as an USB Bitcoin Miner (namely Icarus, device id ICA 0).
+Arduino will work as an USB Bitcoin miner (namely Icarus, device id ICA 0).
+I have no idea (yet) how to implement USB autodetection.
+With a default driver it is just Arduino Leonardo (VID 2341, PID 8036), cgminer doesn't recognize it.
 
 Hash speed is pretty abysmal, about 50 hashes a second on Arduino Pro Micro.
 
-### PC only
+### PC emulator
 
 There is also some test code for a hardware miner emulator on a PC (see icarus_emul directory).
-
-You'd need serial port emulator for debugging on PC: https://code.google.com/archive/p/powersdr-iq/downloads
-
+You'd need serial port emulator for debugging on a PC (https://code.google.com/archive/p/powersdr-iq/downloads).
 By default it creates COM port pairs, e.g. COM8-COM9 means you work with COM8 and use COM9 in bfgminer.
 
 `bfgminer -o http://localhost:19001 -u admin1 -p 123 -S icarus:\\.\COM9`
 
-Hash speed is about 1.14 million hashes a second (could be slightly faster, maybe 6-7 million hashes per CPU core).
+Hash speed is about 1.14 million hashes a second (could be improved, maybe 6-7 million hashes per CPU core).
 
 ## Debugging
 
 ### Bitcoin-in-a-box
 
-Get the setup here: https://github.com/freewil/bitcoin-testnet-box
-
+Get the setup here: https://github.com/freewil/bitcoin-testnet-box.
 There are two debug modes - testnet and regtest, edit configuration files and set testnet=1 or regtest=1 accordingly.
 
 #### Testnet mode
@@ -63,21 +61,20 @@ Both testnet and regtest work with cpuminer (it also supports fallback from getb
 ## Communication protocol
 
 Most miners are icarus-based, should work for all stm32 and avr miners that use USB serial port emulation (e.g. via Zadig).
-
 Read about the protocol here: http://en.qi-hardware.com/wiki/Icarus#Communication_protocol_V3
 
 ## Midstate
 
-Some people experience a problem with midstate hashing.
-This is really very simple. Midstate is SHA256 state after hashing the first 64 bytes of the block header.
-You save it for later, apply it in the very beginning and feed the remaining 16 (80-64) bytes (including nonce in the end).
-Then you get the digest and double hash it as usual. This code is pretty self-explanatory:
+Some experience a problem with midstate hashing.
+This is pretty simple: midstate is a SHA256 32-bit state (intermediate digest state) after processing the first 64 bytes of the block header.
+Load the state, process the remaining 16 (80-64) bytes (including nonce in the end),
+get the result, double hash it as usual and you're done. This code is pretty self-explanatory:
 
 ```
 ...
-SHA256_CTX ctx;
 
 // set midstate
+SHA256_CTX ctx;
 sha256_init(&ctx);
 memcpy(&ctx.state, midstate, 32);
 ctx.datalen = 0;
