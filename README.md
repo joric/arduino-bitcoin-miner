@@ -17,6 +17,8 @@ Start bfgminer using Arduino COM port, e.g. for bitcoin-in-a-box and COM5:
 
 Arduino will work as an USB Bitcoin Miner (namely Icarus, device id ICA 0).
 
+Hash speed is pretty abysmal, about 50 hashes a second on Arduino Pro Micro.
+
 ### PC only
 
 There is also some test code for a hardware miner emulator on a PC (see icarus_emul directory).
@@ -26,6 +28,8 @@ You'd need serial port emulator for debugging on PC: https://code.google.com/arc
 By default it creates COM port pairs, e.g. COM8-COM9 means you work with COM8 and use COM9 in bfgminer.
 
 `bfgminer -o http://localhost:19001 -u admin1 -p 123 -S icarus:\\.\COM9`
+
+Hash speed is about 1.14 million hashes a second (could be slightly faster, maybe 6-7 million hashes per CPU core).
 
 ## Debugging
 
