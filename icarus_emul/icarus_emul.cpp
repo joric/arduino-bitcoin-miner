@@ -7,19 +7,20 @@ const int workdiv1 = 0x04C0FDB4;
 const int workdiv2 = 0x82540E46;
 const int random_nonce = 0xCAFEBABE;
 
-void printHash(uint8_t* hash) {
-	char htab[] = "0123456789abcdef";
-	int i;
-	for (i=0; i<32; i++) {
-		printf( "%c", htab[hash[i]>>4] );
-		printf( "%c", htab[hash[i]&0xf] );
+inline uint32_t bytereverse(uint32_t x) {
+	return ( ((x) << 24) | (((x) << 8) & 0x00ff0000) | (((x) >> 8) & 0x0000ff00) | ((x) >> 24) );
+}
+
+char *bufreverse(uint8_t * buf, int len) {
+	unsigned int * ibuf = (unsigned int*)buf;
+	for (int i=0; i<len/4; i++) {
+		ibuf[i] = bytereverse(ibuf[i]);
 	}
-	printf("\n");
 }
 
 int reply(uint32_t sig) {
 	print("send: 0x%08x\n", sig);
-	int out = htonl(sig);
+	int out = bytereverse(sig);
 	Serial.write((char*)&out, 4);
 }
 
@@ -45,23 +46,13 @@ void strreverse(uint8_t * buf, int len) {
 	}
 }
 
-unsigned int bytereverse(unsigned int x) {
-	return ( ((x) << 24) | (((x) << 8) & 0x00ff0000) | (((x) >> 8) & 0x0000ff00) | ((x) >> 24) );
-}
-
-char *bufreverse(uint8_t * buf, int len) {
-	unsigned int * ibuf = (unsigned int*)buf;
-	for (int i=0; i<len/4; i++) {
-		ibuf[i] = bytereverse(ibuf[i]);
-	}
-}
 
 int double_hashing(uint8_t * block_header, int nonce) {
 	SHA256_CTX ctx;
 	uint8_t hash[32];
 	char hex[128];
 
-	*(int*)(block_header+76) = ntohl(nonce);
+	*(int*)(block_header+76) = bytereverse(nonce);
 
 	sha256_init(&ctx);
 	sha256_update(&ctx, block_header, 80);
@@ -99,7 +90,7 @@ inline int midstate_hashing_prepared(uint8_t * buf, uint32_t nonce) {
 	print("%s (block_tail)\n", btoh(hex, block_tail, 16));
 	*/
 
-	*(uint32_t*)(block_tail+12) = ntohl(nonce);
+	*(uint32_t*)(block_tail+12) = bytereverse(nonce);
 	sha256_update(&ctx, block_tail, 16);
 	sha256_final(&ctx, hash);
 
@@ -197,7 +188,7 @@ int main() {
 
 			//print("\nread bytes: %d\n", bytes);
 
-			int sig = ntohl(*(int*)buf);
+			int sig = bytereverse(*(int*)buf);
 
 			//print("recv: 0x%08x\n", sig);
 
