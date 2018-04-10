@@ -60,8 +60,8 @@ Read about the protocol here: http://en.qi-hardware.com/wiki/Icarus#Communicatio
 
 Some people experience a problem with midstate hashing.
 This is really very simple. Midstate is SHA256 state after hashing the first 64 bytes of the block header.
-You save it for later and then update the state using the remaining 16 (80-64) bytes (including nonce in the very end).
-This code is pretty self-explanatory:
+You save it for later, apply it in the very beginning and feed the remaining 16 (80-64) bytes (including nonce in the end).
+Then you get the digest and double hash it as usual. This code is pretty self-explanatory:
 
 ```
 ...
