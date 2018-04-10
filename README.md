@@ -65,8 +65,8 @@ Changing hardware ids probably requires updating MCU bootloader and editing the 
 
 ## Midstate hashing optimization
 
-Most hardware miners use midstate hashing optimization.
-This is pretty simple: midstate is a SHA256 32-bit state (intermediate digest state) after processing the first 64 bytes of the block header.
+Most hardware miners use midstate hashing optimization. Midstate is simply a SHA256 32-bit state
+(intermediate digest state) after processing the first 64 bytes of the block header.
 Load the state, process the remaining 16 (80-64) bytes (including nonce in the end),
 get the result, double hash it as usual and you're done. This code is pretty self-explanatory:
 
