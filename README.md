@@ -22,6 +22,7 @@ There is also some test code for a hardware miner emulator on a PC
 (see [icarus_emul](https://github.com/joric/arduino-bitcoin-miner/tree/master/icarus_emul) directory).
 You will a need serial port emulator, I use [com0com](https://code.google.com/archive/p/powersdr-iq/downloads).
 It creates COM port pairs, e.g. COM8-COM9 means you work with COM8 and use COM9 in bfgminer.
+
 Hash speed is about 1.14 million hashes a second (could be improved, maybe 6-7 million hashes per CPU core).
 
 ## Bitcoin-in-a-box
@@ -29,13 +30,13 @@ Hash speed is about 1.14 million hashes a second (could be improved, maybe 6-7 m
 Get the setup here: https://github.com/freewil/bitcoin-testnet-box.
 There are two debug modes - testnet and regtest, edit configuration files and set testnet=1 or regtest=1 accordingly.
 
-#### Testnet mode
+### Testnet mode
 
 Testnet-in-a-box works with old bitcoin-core releases only.
 I use bitcoin-qt 0.5.3.1 (coderrr mod with a coin control feature).
 You can download it here: https://luke.dashjr.org/~luke-jr/programs/bitcoin/files/bitcoind/coderrr/coincontrol/0.5.3.1/
 
-#### Regtest mode
+### Regtest mode
 
 Regtest (regression test mode) is a preferred method for debugging new bitcoin-core versions (I've used 0.16.0).
 You need to download or generate at least 1 block to enable mining or you get RPC error 500 "Bitcoin is downloading blocks".
