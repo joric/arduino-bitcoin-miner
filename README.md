@@ -21,7 +21,7 @@ Hash speed is pretty abysmal, about 50 hashes a second on Arduino Pro Micro.
 There is also some test code for a hardware miner emulator on a PC
 (see [icarus_emul](https://github.com/joric/arduino-bitcoin-miner/tree/master/icarus_emul) directory).
 You will a need serial port emulator, I use [com0com](https://code.google.com/archive/p/powersdr-iq/downloads).
-It creates COM port pairs, e.g. COM8-COM9 means you work with COM8 and use COM9 in bfgminer.
+It creates COM port pairs, e.g. you listen on COM8 and specify COM9 for the bfgminer.
 
 Hash speed is about 1.14 million hashes a second (could be improved, maybe 6-7 million hashes per CPU core).
 
