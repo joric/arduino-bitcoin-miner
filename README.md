@@ -50,11 +50,41 @@ Both testnet and regtest work with cpuminer (it also supports fallback from getb
 
 `minerd -a sha256d -o http://localhost:19001 -O admin1:123 --coinbase-addr=<solo mining address>`
 
-## Communicaion protocol
+## Communication protocol
 
 Most miners are icarus-based, should work for all stm32 and avr miners that use USB serial port emulation (e.g. via Zadig).
 
 Read about the protocol here: http://en.qi-hardware.com/wiki/Icarus#Communication_protocol_V3
+
+## Midstate
+
+Some people experience a problem with midstate hashing.
+This is really very simple. Midstate is SHA256 state after hashing the first 64 bytes of the block header.
+You save it for later and then update the state using the remaining 16 (80-64) bytes (including nonce in the very end).
+This code is pretty self-explanatory:
+
+```
+...
+SHA256_CTX ctx;
+
+// set midstate
+sha256_init(&ctx);
+memcpy(&ctx.state, midstate, 32);
+ctx.datalen = 0;
+ctx.bitlen = 512;
+
+// set nonce and hash the remaining bytes
+*(uint32_t*)(block_tail+12) = htonl(nonce);
+sha256_update(&ctx, block_tail, 16);
+sha256_final(&ctx, hash);
+
+// finally, double hashing
+sha256_init(&ctx);
+sha256_update(&ctx, hash, 32);
+sha256_final(&ctx, hash);
+...
+
+```
 
 ## References
 
