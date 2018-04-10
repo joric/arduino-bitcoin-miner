@@ -2,7 +2,7 @@
 
 Arduino Bitcoin Miner
 
-![arduino-bitcoin-miner](https://i.imgur.com/tzfPink.jpg)
+[![Arduino Bitcoin Miner](http://img.youtube.com/vi/GMjrvpc9zDU/0.jpg)](https://www.youtube.com/watch?v=GMjrvpc9zDU)
 
 ## Usage
 
