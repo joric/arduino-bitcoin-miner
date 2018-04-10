@@ -27,6 +27,10 @@ By default it creates COM port pairs, e.g. COM8-COM9 means you work with COM8 an
 
 ### Bitcoin-in-a-box
 
+Get the setup here: https://github.com/freewil/bitcoin-testnet-box
+
+There are two debug modes - testnet and regtest, edit configuration files and set testnet=1 or regtest=1 accordingly.
+
 #### Testnet mode
 
 Testnet-in-a-box works with old bitcoin-core releases only.
@@ -43,8 +47,6 @@ Either use "generate 1" in bitcoin-qt (Help - Debug Window - Console) or use a P
 import requests
 requests.post('http://admin1:123@localhost:19001', data='{"method": "generate", "params": [1]}')
 ```
-
-Get the setup here: https://github.com/freewil/bitcoin-testnet-box
 
 Both testnet and regtest work with cpuminer (it also supports fallback from getblocktemplate to getwork for old clients):
 
