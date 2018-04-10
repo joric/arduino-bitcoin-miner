@@ -8,10 +8,14 @@ Arduino Bitcoin Miner
 
 ### Arduino
 
+
 Build and upload sketch in Arduino IDE.
+
 Start bfgminer using Arduino COM port, e.g. for bitcoin-in-a-box and COM5:
 
 `bfgminer -o http://localhost:19001 -u admin1 -p 123 -S icarus:\\.\COM5`
+
+Arduino will work as an USB Bitcoin Miner (namely Icarus, device id ICA 0).
 
 ### PC only
 
