@@ -280,7 +280,7 @@ void loop() {
             if (end-start>=1000 || start==-1) {
               start = end;
               if (seconds) {
-                Serial.print((float)i/seconds);
+                Serial.print((float)nonce/seconds);
                 Serial.println(" hashes/sec.");
               }
               seconds++;
