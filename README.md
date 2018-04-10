@@ -17,6 +17,7 @@ Start bfgminer using Arduino COM port, e.g. for bitcoin-in-a-box and COM5:
 Arduino will work as an USB Bitcoin miner (namely Icarus, device id ICA 0).
 I have no idea (yet) how to implement USB autodetection.
 With a default driver it is just Arduino Leonardo (VID 2341, PID 8036), cgminer doesn't recognize it.
+Original ICA uses 0x067b/0x2303.
 
 Hash speed is pretty abysmal, about 50 hashes a second on Arduino Pro Micro.
 

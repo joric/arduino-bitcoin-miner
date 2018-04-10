@@ -212,16 +212,16 @@ int main() {
 					uint8_t mbuf[64];
 					midstate_hashing_prepare(mbuf, (uint8_t*)buf);
 
-					for (long long int i=0; i<=0xfffffff; i++) {
-						uint32_t nonce = (uint32_t)i;
+					for (uint32_t nonce=0; nonce<=0xffffffff; nonce++) {
 
 						int t1 = millis();
 
 						if (t1-t0>=1000) {
 							seconds++;
 							t0 = t1;
-							print("Mh/s: %f, nonce: 0x%08x of 0x%08x (%f%%)\r", (float)i/seconds/1000/1000,
-								(int)i, 0xffffffff, (float)i/0xffffffff);
+							print("Mh/s: %f, nonce: 0x%08x of 0x%08x (%f%%)\r",
+								(float)nonce/seconds/1000/1000,
+								nonce, 0xffffffff, (float)nonce/0xffffffff);
 						}
 
 						if (!midstate_hashing_prepared(mbuf, nonce)) {
