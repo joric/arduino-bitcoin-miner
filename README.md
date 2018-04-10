@@ -8,32 +8,23 @@ Arduino Bitcoin Miner
 
 ### Arduino
 
-
 Build and upload sketch in Arduino IDE.
-Start bfgminer using Arduino COM port, e.g. for bitcoin-in-a-box and COM5:
+Arduino will work as a serial port Bitcoin miner (namely Icarus, device id ICA 0).
+You have to specify Arduino COM port for the bfgminer, e.g. for COM5 that would be:
 
 `bfgminer -o http://localhost:19001 -u admin1 -p 123 -S icarus:\\.\COM5`
-
-Arduino will work as an USB Bitcoin miner (namely Icarus, device id ICA 0).
-I have no idea (yet) how to implement USB autodetection.
-With a default driver it is just Arduino Leonardo (VID 2341, PID 8036), cgminer doesn't recognize it.
-Original ICA uses 0x067b/0x2303.
 
 Hash speed is pretty abysmal, about 50 hashes a second on Arduino Pro Micro.
 
 ### PC emulator
 
-There is also some test code for a hardware miner emulator on a PC (see icarus_emul directory).
-You'd need serial port emulator for debugging on a PC (https://code.google.com/archive/p/powersdr-iq/downloads).
-By default it creates COM port pairs, e.g. COM8-COM9 means you work with COM8 and use COM9 in bfgminer.
-
-`bfgminer -o http://localhost:19001 -u admin1 -p 123 -S icarus:\\.\COM9`
-
+There is also some test code for a hardware miner emulator on a PC
+(see [icarus_emul](https://github.com/joric/arduino-bitcoin-miner/tree/master/icarus_emul) directory).
+You will a need serial port emulator, I use [com0com](https://code.google.com/archive/p/powersdr-iq/downloads).
+It creates COM port pairs, e.g. COM8-COM9 means you work with COM8 and use COM9 in bfgminer.
 Hash speed is about 1.14 million hashes a second (could be improved, maybe 6-7 million hashes per CPU core).
 
-## Debugging
-
-### Bitcoin-in-a-box
+## Bitcoin-in-a-box
 
 Get the setup here: https://github.com/freewil/bitcoin-testnet-box.
 There are two debug modes - testnet and regtest, edit configuration files and set testnet=1 or regtest=1 accordingly.
@@ -64,19 +55,24 @@ Both testnet and regtest work with cpuminer (it also supports fallback from getb
 Most miners are icarus-based, should work for all stm32 and avr miners that use USB serial port emulation (e.g. via Zadig).
 Read about the protocol here: http://en.qi-hardware.com/wiki/Icarus#Communication_protocol_V3
 
-## Midstate
+## USB Autodetection
 
-Some experience a problem with midstate hashing.
+USB autodetection is not implemented yet. Default Arduino Leonardo driver uses VID_2341 & PID_8036,
+and neither bfgminer nor cgminer recognize it as an USB mining device.
+Original ICA uses either VID_067B & PID_2303 (USBDeviceShare) or VID_1FC9 & PID_0083 (LPC USB VCom Port driver).
+Changing hardware ids probably requires updating MCU bootloader and editing the driver.
+
+## Midstate hashing optimization
+
+Most hardware miners use midstate hashing optimization.
 This is pretty simple: midstate is a SHA256 32-bit state (intermediate digest state) after processing the first 64 bytes of the block header.
 Load the state, process the remaining 16 (80-64) bytes (including nonce in the end),
 get the result, double hash it as usual and you're done. This code is pretty self-explanatory:
 
 ```
-...
-
-// set midstate
 SHA256_CTX ctx;
-sha256_init(&ctx);
+
+// apply midstate
 memcpy(&ctx.state, midstate, 32);
 ctx.datalen = 0;
 ctx.bitlen = 512;
@@ -86,12 +82,10 @@ ctx.bitlen = 512;
 sha256_update(&ctx, block_tail, 16);
 sha256_final(&ctx, hash);
 
-// finally, double hashing
+// double hash the result
 sha256_init(&ctx);
 sha256_update(&ctx, hash, 32);
 sha256_final(&ctx, hash);
-...
-
 ```
 
 ## References
