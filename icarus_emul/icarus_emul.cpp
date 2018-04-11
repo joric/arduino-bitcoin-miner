@@ -212,7 +212,7 @@ int main() {
 					uint8_t mbuf[64];
 					midstate_hashing_prepare(mbuf, (uint8_t*)buf);
 
-					for (uint32_t nonce=0; nonce<=0xffffffff; nonce++) {
+					for (uint32_t nonce=0;;nonce++) {
 
 						int t1 = millis();
 
@@ -228,6 +228,9 @@ int main() {
 							reply(nonce);
 							break;
 						}
+				
+						if (nonce==0xffffffff)
+							break;
 					}
 
 				break;

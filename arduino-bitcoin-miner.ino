@@ -273,7 +273,7 @@ void loop() {
 
         default:
           start = -1;
-          for (uint32_t nonce=0; nonce<=0xffffffff; nonce++) {
+          for (uint32_t nonce=0;;nonce++) {
 
 #ifdef DEBUG
             int end = millis();
@@ -292,6 +292,8 @@ void loop() {
               break;
             }
 
+            if (nonce==0xffffffff)
+              break;
           }
         break;
 
