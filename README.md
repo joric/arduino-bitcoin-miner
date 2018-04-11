@@ -20,7 +20,7 @@ Using an AVR-optimized cryptographic library
 
 ### PC emulator
 
-There is also a PC version of the serial port bitcoin miner (see [icarus_emul](https://github.com/joric/arduino-bitcoin-miner/tree/master/icarus_emul) directory).
+There is also a PC version of the serial port miner (see [icarus_emul](https://github.com/joric/arduino-bitcoin-miner/tree/master/icarus_emul) directory).
 You will also need a serial port emulator, e.g. [com0com](https://code.google.com/archive/p/powersdr-iq/downloads).
 It creates COM port pairs, e.g. you listen on COM8 and specify COM9 for the bfgminer.
 The hash speed is currently about 1.14 million hashes a second (could be improved, maybe 6-7 million hashes per CPU core).
@@ -65,10 +65,10 @@ Changing hardware ids requires updating bootloader and fixing the driver.
 
 ## Midstate hashing optimization
 
-Most hardware miners use midstate hashing optimization. Midstate is a hashing function state
-(a part of its context, usually ctx) after processing the first 64 bytes of the block header,
-so one of total three 64-byte data blocks gets precalculated. Simply load the state, process
-the remaining 16 (80-64) bytes (including nonce in the end), and hash the result:
+Most hardware miners use midstate hashing optimization. Midstate is a 32-byte long data string,
+a part of the hashing function context after processing the first 64 bytes of the block header.
+Simply apply the state from the payload, process the remaining 16 (80-64) bytes of the block header
+(including nonce in the end), and hash the result.
 
 ```
 SHA256_CTX ctx;
