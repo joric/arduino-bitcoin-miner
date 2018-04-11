@@ -204,16 +204,17 @@ int midstate_hashing(uint8_t *hash, uint8_t * payload, uint32_t nonce) {
   strreverse(block_tail, 12);
   bufreverse(block_tail, 12);
 
-  *(uint32_t*)(block_tail+12) = bytereverse(nonce);
-  
-  sha256_init(&ctx);
+  // apply midstate
+  memcpy(&ctx.state, midstate, 32);
   ctx.datalen = 0;
   ctx.bitlen = 512;
-  memcpy(&ctx.state, midstate, 32);
 
+  // set nonce and hash the remaining bytes
+  *(uint32_t*)(block_tail+12) = bytereverse(nonce);
   sha256_update(&ctx, block_tail, 16);
   sha256_final(&ctx, hash);
 
+  // double hash the result
   sha256_init(&ctx);
   sha256_update(&ctx, hash, 32);
   sha256_final(&ctx, hash);
