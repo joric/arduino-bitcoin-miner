@@ -14,7 +14,9 @@ You have to specify Arduino COM port for the bfgminer, e.g. for COM5 that would 
 
 `bfgminer -o http://localhost:19001 -u admin1 -p 123 -S icarus:\\.\COM5`
 
-Hash speed is pretty abysmal, about 50 hashes a second on Arduino Pro Micro.
+Current hash speed is pretty abysmal, about 50 hashes a second on Arduino Pro Micro.
+
+An [AVR-optimized SHA256](http://cryptovia.com/cryptographic-libraries-for-avr-cpu/) is 42744 cycles, so we could get to maybe 200 hashes a second on a 16 MHz MCU.
 
 ### PC emulator
 
@@ -65,10 +67,10 @@ Changing hardware ids probably requires updating MCU bootloader and editing the 
 
 ## Midstate hashing optimization
 
-Most hardware miners use midstate hashing optimization. Midstate is simply a SHA256 32-bit state
-(intermediate digest state) after processing the first 64 bytes of the block header.
-Load the state, process the remaining 16 (80-64) bytes (including nonce in the end),
-get the result, double hash it as usual and you're done. This code is pretty self-explanatory:
+Most hardware miners use midstate hashing optimization. Midstate is a hashing function state
+(usually called ctx, context) after processing the first 64 bytes of the block header,
+so one of total three 64-byte aligned data blocks gets precalculated. Simply load the state, process
+the remaining 16 (80-64) bytes (including nonce in the end), hash the result and you're done:
 
 ```
 SHA256_CTX ctx;
