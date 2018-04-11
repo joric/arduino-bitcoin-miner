@@ -15,17 +15,15 @@ You have to specify Arduino COM port for the bfgminer, e.g. for COM5 that would 
 `bfgminer -o http://localhost:19001 -u admin1 -p 123 -S icarus:\\.\COM5`
 
 Current hash speed is pretty abysmal, about 50 hashes a second on Arduino Pro Micro.
-
-An [AVR-optimized SHA256](http://cryptovia.com/cryptographic-libraries-for-avr-cpu/) is 42744 cycles, so we could get to maybe 200 hashes a second on a 16 MHz MCU.
+Using an AVR-optimized cryptographic library
+([42744 cycles per block](http://cryptovia.com/cryptographic-libraries-for-avr-cpu/)) we may get about 200 hashes a second on a 16 MHz MCU.
 
 ### PC emulator
 
-There is also some test code for a hardware miner emulator on a PC
-(see [icarus_emul](https://github.com/joric/arduino-bitcoin-miner/tree/master/icarus_emul) directory).
-You will a need serial port emulator, I use [com0com](https://code.google.com/archive/p/powersdr-iq/downloads).
+There is also a PC version of the serial port bitcoin miner (see [icarus_emul](https://github.com/joric/arduino-bitcoin-miner/tree/master/icarus_emul) directory).
+You will also need a serial port emulator, e.g. [com0com](https://code.google.com/archive/p/powersdr-iq/downloads).
 It creates COM port pairs, e.g. you listen on COM8 and specify COM9 for the bfgminer.
-
-Hash speed is about 1.14 million hashes a second (could be improved, maybe 6-7 million hashes per CPU core).
+The hash speed is currently about 1.14 million hashes a second (could be improved, maybe 6-7 million hashes per CPU core).
 
 ## Bitcoin-in-a-box
 
@@ -63,14 +61,14 @@ Read about the protocol here: http://en.qi-hardware.com/wiki/Icarus#Communicatio
 USB autodetection is not implemented yet. Default Arduino Leonardo driver uses VID_2341 & PID_8036,
 and neither bfgminer nor cgminer recognize it as an USB mining device.
 Original ICA uses either VID_067B & PID_2303 (USBDeviceShare) or VID_1FC9 & PID_0083 (LPC USB VCom Port driver).
-Changing hardware ids probably requires updating MCU bootloader and editing the driver.
+Changing hardware ids requires updating bootloader and fixing the driver.
 
 ## Midstate hashing optimization
 
 Most hardware miners use midstate hashing optimization. Midstate is a hashing function state
-(usually called ctx, context) after processing the first 64 bytes of the block header,
-so one of total three 64-byte aligned data blocks gets precalculated. Simply load the state, process
-the remaining 16 (80-64) bytes (including nonce in the end), hash the result and you're done:
+(a part of its context, usually ctx) after processing the first 64 bytes of the block header,
+so one of total three 64-byte data blocks gets precalculated. Simply load the state, process
+the remaining 16 (80-64) bytes (including nonce in the end), and hash the result:
 
 ```
 SHA256_CTX ctx;
