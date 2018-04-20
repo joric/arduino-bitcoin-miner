@@ -14,9 +14,7 @@ You have to specify Arduino COM port for the bfgminer, e.g. for COM5 that would 
 
 `bfgminer -o http://localhost:19001 -u admin1 -p 123 -S icarus:\\.\COM5`
 
-Current hash speed is pretty abysmal, about 50 hashes a second on Arduino Pro Micro.
-Using an AVR-optimized cryptographic library
-([42744 cycles per block](http://cryptovia.com/cryptographic-libraries-for-avr-cpu/)) we may get about 200 hashes a second on a 16 MHz MCU.
+Current hash speed is pretty abysmal, about 150 hashes a second on Arduino Pro Micro using an AVR assembly version.
 
 ### PC emulator
 

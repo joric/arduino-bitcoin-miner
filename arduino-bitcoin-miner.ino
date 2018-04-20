@@ -3,6 +3,7 @@
 // implements icarus protocol v3 with midstate support
 // works with bitcoin pools and bitcoin-in-a-box via bfgminer:
 // bfgminer -o http://localhost:19001 -u admin1 -p 123 -S icarus:\\.\COM5
+// this one is about 50 hashes/second on an Arduino Pro Micro
 
 //#define DEBUG
 #undef LED_BUILTIN
