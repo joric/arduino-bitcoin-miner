@@ -6,25 +6,42 @@ Arduino Bitcoin Miner
 
 ## Usage
 
-### Arduino
-
 Build and upload sketch in Arduino IDE.
 Arduino will work as a serial port Bitcoin miner (namely Icarus, device id ICA 0).
-You have to specify Arduino COM port for the bfgminer, e.g. for COM5 that would be:
+Run bfgminer from the command line using testnet-in-a-box address and an Arduino COM port, e.g. for COM5 that would be:
 
 `bfgminer -o http://localhost:19001 -u admin1 -p 123 -S icarus:\\.\COM5`
 
-Current hash speed is pretty abysmal, about 150 hashes a second on Arduino Pro Micro using an AVR assembly version.
+## Hashrate
 
-### PC emulator
+Current hash speed is pretty abysmal, considering the 16 MHz Arduino Pro Micro (Atmega32u4 at 5v):
 
-There is also a PC version of the serial port miner (see [icarus_emul](https://github.com/joric/arduino-bitcoin-miner/tree/master/icarus_emul) directory).
-You will also need a serial port emulator, e.g. [com0com](https://code.google.com/archive/p/powersdr-iq/downloads).
+* ~50 hashes a second for arduino-bitcoin-miner.ino
+* ~150 hashes a second for the AVR assembly version
+
+At this rate you would need about an year to find a single share.
+For the commercial [Cryptovia](http://cryptovia.com/cryptographic-libraries-for-avr-cpu/) library
+(42744 cycles per 50 bytes) it'd be roughly the same 100-150 hashes for the same MCU.
+All given values are for double hashing the 80-byte block header,
+so every hash takes two 64-byte SHA256 blocks, consdering midstate optimization.
+
+## What if
+
+* You need about 1.5 TH/s to mine dollar a day, according to the [Mining Profitability Calculator](https://www.cryptocompare.com/mining/calculator/) (numbers may vary).
+* At 150 hashes a second per Arduino, mining one dollar a day would need 10 billion Arduinos.
+* Pro Micro consumes 200 mA, 10 billion will need 2 gigawatts, slightly more than Dr. Brown needed for a time machine.
+* With an average price $0.2 per KWh the 2 gigawatt rig will cost you about $10M a day (minus one dollar).
+
+## Emulator
+
+There is also a PC version of the serial port miner (see icarus_emul directory).
+You will need a serial port emulator, e.g. [com0com](https://code.google.com/archive/p/powersdr-iq/downloads).
 It creates COM port pairs, e.g. you listen on COM8 and specify COM9 for the bfgminer.
-The hash speed is currently about 1.14 million hashes a second (could be improved, maybe 6-7 million hashes per CPU core).
+Emulator hash speed is currently about 1.14 million hashes a second (could be improved, maybe 6-7 million hashes per CPU core).
 
-## Bitcoin-in-a-box
+## Testnet-in-a-box
 
+To debug solo mining on the localhost you'd need testnet-in-a-box.
 Get the setup here: https://github.com/freewil/bitcoin-testnet-box.
 There are two debug modes - testnet and regtest, edit configuration files and set testnet=1 or regtest=1 accordingly.
 
@@ -45,23 +62,24 @@ import requests
 requests.post('http://admin1:123@localhost:19001', data='{"method": "generate", "params": [1]}')
 ```
 
-Both testnet and regtest work with cpuminer (it also supports fallback from getblocktemplate to getwork for old clients):
+Both testnet and regtest work well with cpuminer (and it supports fallback from getblocktemplate to getwork for old clients):
 
 `minerd -a sha256d -o http://localhost:19001 -O admin1:123 --coinbase-addr=<solo mining address>`
 
-## Communication protocol
+## Protocol
 
 Most miners are icarus-based, should work for all stm32 and avr miners that use USB serial port emulation (e.g. via Zadig).
 Read about the protocol here: http://en.qi-hardware.com/wiki/Icarus#Communication_protocol_V3
 
-## USB Autodetection
+## Hotplug
 
-USB autodetection is not implemented yet. Default Arduino Leonardo driver uses VID_2341 & PID_8036,
+USB autodetection is not implemented yet, you have to specify a COM port.
+Default Arduino Leonardo driver uses VID_2341 & PID_8036,
 and neither bfgminer nor cgminer recognize it as an USB mining device.
 Original ICA uses either VID_067B & PID_2303 (USBDeviceShare) or VID_1FC9 & PID_0083 (LPC USB VCom Port driver).
 Changing hardware ids requires updating bootloader and fixing the driver.
 
-## Midstate hashing optimization
+## Midstate
 
 Most hardware miners use midstate hashing optimization. Midstate is a 32-byte long data string,
 a part of the hashing function context after processing the first 64 bytes of the block header.
