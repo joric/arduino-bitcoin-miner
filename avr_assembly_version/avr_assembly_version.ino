@@ -88,7 +88,7 @@ uint32_t find_nonce(uint8_t * payload, uint32_t nonce=0, int timeout=15) {
     }
 
     
-    if (nonce>=1024 || (hash[31]==0 && hash[30]==0 /*&& hash[29]==0 && hash[28]==0 */ )) {
+    if (seconds>=timeout || (hash[31]==0 && hash[30]==0 /*&& hash[29]==0 && hash[28]==0 */ )) {
 #ifdef DEBUG
       Serial.println(btoh(hex, hash, 32));
 #endif      
