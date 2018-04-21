@@ -109,7 +109,8 @@ sha256_final(&ctx, hash);
 
 ## References
 
-* Bitcoin Core releases: https://bitcoin.org/bin
+* [Reddit thread](https://www.reddit.com/r/arduino/comments/8dshqd/arduino_pro_microbased_usb_bitcoin_miner_150_hs/)
+* [Bitcoin Core releases](https://bitcoin.org/bin)
 
 
 
