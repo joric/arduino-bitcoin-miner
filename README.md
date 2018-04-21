@@ -2,6 +2,8 @@
 
 Arduino Bitcoin Miner
 
+## Video
+
 [![Arduino Bitcoin Miner](http://img.youtube.com/vi/GMjrvpc9zDU/0.jpg)](https://www.youtube.com/watch?v=GMjrvpc9zDU)
 
 ## Usage
