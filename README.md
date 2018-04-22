@@ -118,6 +118,7 @@ sha256_final(&ctx, hash);
 
 ## References
 
+* https://hackaday.com/2018/04/22/hackaday-links-april-22-2018/
 * https://www.reddit.com/r/arduino/comments/8dshqd/arduino_pro_microbased_usb_bitcoin_miner_150_hs/
 
 
