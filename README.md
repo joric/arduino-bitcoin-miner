@@ -33,7 +33,7 @@ so every hash takes two 64-byte SHA256 blocks, consdering midstate optimization.
 * At 150 hashes a second per Arduino, mining one dollar a day would need 10 billion Arduinos.
 * Pro Micro consumes 200 mA, 10 billion will need 2 gigawatts, slightly more than Dr. Brown needed for a time machine.
 * With an average price $0.2 per kWh the 2 gigawatt rig will cost you about $10M a day (minus one dollar).
-* If you prefer a single AVR chip, mining 1 Bitcoin on ATmega32U4 will take about 280 billion years.
+* If you prefer a single AVR chip, mining 1 Bitcoin on ATmega32U4 will theoretically take about 280 billion years.
 
 ## Emulator
 
