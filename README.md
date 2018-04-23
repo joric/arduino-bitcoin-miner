@@ -16,24 +16,24 @@ Run BFGMiner from the command line using testnet-in-a-box address and an Arduino
 
 ## Hashrate
 
-Current hash speed is pretty abysmal, considering the 16 MHz Arduino Pro Micro (Atmega32u4 at 5v):
+Current hash speed is pretty abysmal, considering the 16 MHz Arduino Pro Micro (ATmega32U4 at 5v):
 
 * ~ 50 hashes a second for arduino-bitcoin-miner.ino
 * ~ 150 hashes a second for the AVR assembly version
 
 At this rate you would need about an year to find a single share.
 For the commercial [Cryptovia](http://cryptovia.com/cryptographic-libraries-for-avr-cpu/) library
-(42744 cycles per 50 bytes) it would be roughly the same number of hashes (16MHz / 42744 / 2 ~ 187Hz), maybe less.
+(42744 cycles per 50 bytes) it would be roughly the same number of hashes (16MHz / 42744 / 2 ~ 187Hz), maybe even less.
 All given values are for double hashing the 80-byte block header,
 so every hash takes two 64-byte SHA256 blocks, consdering midstate optimization.
 
 ## What if
 
-* You need about 1.5 TH/s to mine dollar a day, according to the [Mining Profitability Calculator](https://www.cryptocompare.com/mining/calculator/) (numbers may vary).
+* You need 1.5 TH/s for dollar a day or 42 TH/s for Bitcoin a year, see [Mining Profitability Calculator](https://www.cryptocompare.com/mining/calculator/) (numbers may vary).
 * At 150 hashes a second per Arduino, mining one dollar a day would need 10 billion Arduinos.
 * Pro Micro consumes 200 mA, 10 billion will need 2 gigawatts, slightly more than Dr. Brown needed for a time machine.
 * With an average price $0.2 per kWh the 2 gigawatt rig will cost you about $10M a day (minus one dollar).
-* If you want to save on electricity and mine on a single AVR chip, 1 BTC will theoretically take about 280 billion years.
+* If you prefer a single AVR chip, mining 1 Bitcoin on ATmega32U4 will take about 280 billion years.
 
 ## Emulator
 
