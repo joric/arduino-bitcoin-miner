@@ -33,6 +33,7 @@ so every hash takes two 64-byte SHA256 blocks, consdering midstate optimization.
 * At 150 hashes a second per Arduino, mining one dollar a day would need 10 billion Arduinos.
 * Pro Micro consumes 200 mA, 10 billion will need 2 gigawatts, slightly more than Dr. Brown needed for a time machine.
 * With an average price $0.2 per kWh the 2 gigawatt rig will cost you about $10M a day (minus one dollar).
+* If you want to save on electricity and mine on a single AVR chip, 1 BTC will theoretically take about 280 billion years.
 
 ## Emulator
 
@@ -90,9 +91,12 @@ and neither BFGMiner nor CGMiner recognize it as an USB mining device.
 Original ICA uses either VID_067B & PID_2303 (USBDeviceShare) or VID_1FC9 & PID_0083 (LPC USB VCom Port driver).
 Changing hardware ids requires updating bootloader and fixing the driver.
 
-## Midstate
+## Algorithms
 
-Most hardware miners use midstate hashing optimization. Midstate is a 32-byte long data string,
+### Sha256d
+
+As the majority of Bitcoin miners, this one also uses midstate hashing optimization.
+Midstate is a 32-byte long data string,
 a part of the hashing function context after processing the first 64 bytes of the block header.
 Simply apply the state from the payload, process the remaining 16 (80-64) bytes of the block header
 (including nonce in the end), and hash the result.
@@ -115,6 +119,13 @@ sha256_init(&ctx);
 sha256_update(&ctx, hash, 32);
 sha256_final(&ctx, hash);
 ```
+
+### Scrypt
+
+Not supported. Atmega32u4 only has 2.5K RAM, so even basic Scrypt-based cryptocurrencies are not feasible,
+for example, Litecoin uses Scrypt with 128 KB RAM (in order to fit into a typical L2 cache).
+Other cryptocurrencies have even higher memory requirements, e.g. CryptoNight algorithm used in Monero
+requires at least a megabyte of internal memory.
 
 ## References
 
