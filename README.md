@@ -131,6 +131,7 @@ requires at least a megabyte of internal memory.
 
 * https://hackaday.com/2018/04/22/hackaday-links-april-22-2018/
 * https://www.reddit.com/r/arduino/comments/8dshqd/arduino_pro_microbased_usb_bitcoin_miner_150_hs/
-
+* https://www.quora.com/How-long-would-it-take-to-mine-a-Bitcoin-on-an-AVR-chip-Arduino
+* https://linustechtips.com/main/topic/840241-arduino-bitcoin-miner/
 
 
