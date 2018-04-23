@@ -76,8 +76,8 @@ Most miners are icarus-based, should work for all STM32 and AVR-based miners tha
 BFGMiner specific:
 
 * BFGMiner tests block with nonce 0x000187a2 first. Since we need to test only 100258 values the reply should be instant.
-* It sends special work (2e4c8f91...) to determine number of cores (work division). Nonce 0x04c0fdb4 means single core.
-* If no data sent back in ~11.3 seconds (full cover time on 32bit range at 380MH/s FPGA) miner sends another work.
+* Sends special work (2e4c8f91...) to determine number of cores (work division). Nonce 0x04c0fdb4 means single core.
+* If no data sent back in ~11.3 seconds (full cover time on 32bit range at 380MH/s FPGA), sends another work.
 
 
 Read more about the protocol here: http://en.qi-hardware.com/wiki/Icarus#Communication_protocol_V3
@@ -122,7 +122,7 @@ sha256_final(&ctx, hash);
 
 ### Scrypt
 
-Not supported. Atmega32u4 only has 2.5K RAM, so even basic Scrypt-based cryptocurrencies are not feasible,
+Scrypt is not supported (yet). ATmega32U4 only has 2.5K RAM, so even basic Scrypt-based cryptocurrencies are not feasible,
 for example, Litecoin uses Scrypt with 128 KB RAM (in order to fit into a typical L2 cache).
 Other cryptocurrencies have even higher memory requirements, e.g. CryptoNight algorithm used in Monero
 requires at least a megabyte of internal memory.
