@@ -37,7 +37,7 @@ so every hash takes two 64-byte SHA256 blocks, consdering midstate optimization.
 
 ## Emulator
 
-There is also a PC version of the serial port miner (see cppversion directory).
+There is also a PC version of the serial port miner (see pc_version directory).
 You will need a serial port emulator, e.g. [com0com](https://code.google.com/archive/p/powersdr-iq/downloads).
 It creates COM port pairs, e.g. you listen on COM8 and specify COM9 for the BFGMiner.
 Emulator hash speed is currently about 1.14 million hashes a second (could be improved, maybe 6-7 million hashes per CPU core).
