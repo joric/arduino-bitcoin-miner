@@ -71,13 +71,13 @@ Most miners are icarus-based, should work for all STM32 and AVR-based miners tha
 
 * No detection is needed (no special command for this).
 * Wait for data. Each data packet is 64 bytes: 32 bytes midstate + 20 fill bytes (any value) + last 12 bytes of block header.
-* Send back the results (when valid share is found, send back the 4-byte result nonce immediately).
+* Send back the results, i.e. when valid share is found, send back the 4-byte result nonce immediately.
 
 BFGMiner specific:
 
 * BFGMiner tests block with nonce 0x000187a2 first. Since we need to test only 100258 values the reply should be instant.
-* Sends special work (2e4c8f91...) to determine number of cores (work division). Nonce 0x04c0fdb4 means single core.
-* If no data sent back in ~11.3 seconds (full cover time on 32bit range at 380MH/s FPGA), sends another work.
+* Sends special work (2e4c8f91...) to determine work division. Expects 0x04c0fdb4 or 0x82540e46 for single or dual core.
+* If no data sent back in ~11.3 seconds (full cover time on 32bit range at 380MH/s FPGA), miner sends another work.
 
 
 Read more about the protocol here: http://en.qi-hardware.com/wiki/Icarus#Communication_protocol_V3
