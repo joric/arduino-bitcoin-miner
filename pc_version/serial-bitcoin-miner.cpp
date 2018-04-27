@@ -1,4 +1,4 @@
-// serial port bitcoin miner
+// win32 serial port bitcoin miner
 // com0com emulator: https://code.google.com/archive/p/powersdr-iq/downloads
 // use com pairs, e.g. you listen on COM8 and specify COM9 for the bfgminer:
 // bfgminer -o http://localhost:19001 -u admin1 -p 123 -S icarus:\\.\COM9
@@ -128,8 +128,7 @@ ArduinoSerial Serial;
 uint32_t find_nonce(uint8_t * payload, uint32_t nonce=0, int timeout=15) {
 	char hex[128];
 
-	printf("\n--- find_nonce ---\n");
-	printf("%s (find_nonce), start nonce 0x%08x\n", btoh(hex, payload, 64), nonce);
+	printf("> 0x%08x, payload: %s...\n", nonce, btoh(hex, payload, 32));
 
 	uint8_t buf[32+16];
 	uint8_t * midstate = buf;
@@ -173,7 +172,7 @@ uint32_t find_nonce(uint8_t * payload, uint32_t nonce=0, int timeout=15) {
 		if (seconds>=timeout || (hash[31]==0 && hash[30]==0 && hash[29]==0 /*&& hash[28]==0*/ )) {
 #ifdef DEBUG
 			char hex[65];
-			printf("found! 0x%08x\n", nonce);
+			printf("< 0x%08x, hash: ", nonce);
 			Serial.println(btoh(hex, hash, 32));
 #endif
 			return nonce;
@@ -186,15 +185,13 @@ uint32_t find_nonce(uint8_t * payload, uint32_t nonce=0, int timeout=15) {
 }
 
 int double_hashing(uint8_t * block_header, uint32_t nonce) {
-
-	printf("\n--- double_hashing ---\n");
 	SHA256_CTX ctx;
 	uint8_t hash[32];
 	char hex[128];
 	*(uint32_t*)(block_header+76) = htonl(nonce);
 	SHA256(block_header, 80, hash);
 	SHA256(hash, 32, hash);
-	printf("%s (double hashing) nonce: 0x%08x\n", btoh(hex, hash, 32), nonce);
+	printf("D 0x%08x, hash: %s\n", nonce, btoh(hex, hash, 32));
 	return 0;
 }
 
@@ -205,7 +202,7 @@ int nonce;
 
 void tests() {
 
-#if(0)
+#if(1)
 	// genesis block
 	char block0[] = "0100000000000000000000000000000000000000000000000000000000000000000000003ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b1e5e4a29ab5f49ffff001d1dac2b7c0101000000010000000000000000000000000000000000000000000000000000000000000000ffffffff4d04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73ffffffff0100f2052a01000000434104678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5fac00000000";
 	nonce = 0x1dac2b7c;
@@ -213,7 +210,7 @@ void tests() {
 	double_hashing(data, nonce);
 #endif
 
-#if(0)
+#if(1)
 	// test block (reversed)
 	char block1[] = "0000000120c8222d0497a7ab44a1a2c7bf39de941c9970b1dc7cdc400000079700000000e88aabe1f353238c668d8a4df9318e614c10c474f8cdf8bc5f6397b946c33d7c4e7242c31a098ea500000000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000080020000";
 	char midstate1[] = "33c5bf5751ec7f7e056443b5aee3800331432c83f404d9de38b94ecbf907b92d";
@@ -226,7 +223,7 @@ void tests() {
 	find_nonce(data, nonce);
 #endif
 
-#if(0)
+#if(1)
 	// test payload
 	char payload2[] = "ce92099c5a80bb81c52990d5c0924c625fd25a535640607d5a4bdf8174e2c8d500000000000000000000000080000000000000000b290c1a42313b4f21b5bcb8";
 	nonce = 0x8e0b31c5;
@@ -234,7 +231,7 @@ void tests() {
 	find_nonce(data, nonce);
 #endif
 
-#if(0)
+#if(1)
 	// golden payload
 	char payload3[] = "4679ba4ec99876bf4bfe086082b400254df6c356451471139a3afa71e48f544a000000000000000000000000000000000000000087320b1a1426674f2fa722ce";
 	nonce = 0x000187a2;
@@ -242,7 +239,7 @@ void tests() {
 	find_nonce(data, nonce);
 #endif
 
-#if (0)
+#if (1)
 	// work division
 	char payload4[] = "2e4c8f91fd595d2d7ea20aaacb64a2a04382860277cf26b6a1ee04c56a5b504a00000000000000000000000000000000000000006461011ac906a951fb9b3c73";
 	nonce = 0x04c0fdb4;
@@ -269,8 +266,8 @@ void setup() {
   delay(1000);
   char payload_hex[] = "4679ba4ec99876bf4bfe086082b400254df6c356451471139a3afa71e48f544a000000000000000000000000000000000000000087320b1a1426674f2fa722ce";  
   find_nonce(htob(payload, payload_hex, size), 0x000187a2); // should print da9fcfb26c7f5b30746b1c068c2bd690a8fa8c16e4a80841b604000000000000
-#endif
   tests();
+#endif
 }
 
 void reply(uint32_t data) {
