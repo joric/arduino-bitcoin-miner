@@ -1,0 +1,301 @@
+// serial port bitcoin miner
+// com0com emulator: https://code.google.com/archive/p/powersdr-iq/downloads
+// use com pairs, e.g. you listen on COM8 and specify COM9 for the bfgminer:
+// bfgminer -o http://localhost:19001 -u admin1 -p 123 -S icarus:\\.\COM9
+
+#define DEBUG
+
+#include <windows.h>
+#include <math.h>
+#include <stdio.h>
+#include <openssl/sha.h>
+
+#define SERIAL_DEVICE "\\\\.\\COM8"
+
+#define uint8_t unsigned char
+#define uint32_t unsigned int
+#define delay(ms) Sleep(ms)
+#define millis() GetTickCount()
+
+inline uint32_t htonl(uint32_t x) {
+  return ( ((x) << 24) | (((x) << 8) & 0x00ff0000) | (((x) >> 8) & 0x0000ff00) | ((x) >> 24) );
+}
+
+void strreverse(uint8_t * buf, int len) {
+  for (uint8_t *b = buf, *e = buf+len-1, tmp; b<e; tmp=*b, *b++=*e, *e--=tmp);
+}
+
+char *bufreverse(uint8_t * buf, int len) {
+  uint32_t * ibuf = (uint32_t *)buf;
+  for (int i=0; i<len/4; i++) ibuf[i] = htonl(ibuf[i]);
+}
+
+uint8_t *htob(uint8_t *dest, char *src, int len, int v=0) {
+  for (uint8_t *p=dest; sscanf(src, "%02x", &v) > 0; *p++ = v, src += 2);
+  return dest;
+}
+
+char *btoh(char *dest, uint8_t *src, int len) {
+  for (char *d = dest; len--; sprintf(d, "%02x", (unsigned char)*src++), d += 2);
+  return dest;
+}
+
+int serial_write(HANDLE hSerial, unsigned char * buf, int size) {
+	OVERLAPPED osWrite = {0};
+	DWORD dwWritten;
+	DWORD dwRes;
+	return WriteFile(hSerial, buf, size, &dwWritten, &osWrite);
+}
+
+int serial_read(HANDLE hSerial, unsigned char * buf, int size) {
+	DWORD bytes_read = 0;
+	ReadFile(hSerial, buf, size, &bytes_read, NULL);
+	if (bytes_read) printf("%d bytes read\n", (int)bytes_read);
+	return (int)bytes_read;
+}
+
+int serial_open(HANDLE * pSerial, int speed) {
+
+	HANDLE hSerial;
+
+	DCB dcbSerialParams = {0};
+	COMMTIMEOUTS timeouts = {0};
+
+	printf("Opening %s... ", SERIAL_DEVICE);
+
+	hSerial = CreateFile(SERIAL_DEVICE, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
+
+	if (hSerial == INVALID_HANDLE_VALUE) {
+		printf("Error\n");
+		return -1;
+	}
+
+	printf("OK\n");
+
+	// Set device parameters (115200 baud, arduino default 1 stop bit, no parity)
+	dcbSerialParams.DCBlength = sizeof(dcbSerialParams);
+
+	if (GetCommState(hSerial, &dcbSerialParams) == 0) {
+		printf("Error getting device state\n");
+		CloseHandle(hSerial);
+		return -1;
+	}
+
+	dcbSerialParams.BaudRate = speed;
+	dcbSerialParams.ByteSize = 8;
+	dcbSerialParams.StopBits = ONESTOPBIT;
+	dcbSerialParams.Parity = NOPARITY;
+
+	if(SetCommState(hSerial, &dcbSerialParams) == 0) {
+		printf("Error setting device parameters\n");
+		CloseHandle(hSerial);
+		return -1;
+	}
+
+	// Set COM port timeout settings
+	timeouts.ReadIntervalTimeout = 50;
+	timeouts.ReadTotalTimeoutConstant = 50;
+	timeouts.ReadTotalTimeoutMultiplier = 10;
+	timeouts.WriteTotalTimeoutConstant = 50;
+	timeouts.WriteTotalTimeoutMultiplier = 10;
+
+	if(SetCommTimeouts(hSerial, &timeouts) == 0)
+	{
+		printf("Error setting timeouts\n");
+		CloseHandle(hSerial);
+		return -1;
+	}
+
+	*pSerial = hSerial;
+
+	return 0;
+}
+
+struct ArduinoSerial {
+	HANDLE hSerial;
+	void begin(int speed) { serial_open(&hSerial, speed); }
+	int available() { return 1; }
+	int readBytes(unsigned char * buf, int size) { return serial_read(hSerial, buf, size); }
+	int write(unsigned char * buf, int size) { return serial_write(hSerial, buf, size); }
+	void println(const char * s=0) { printf("%s\n", s); };
+	void print(float f) { printf("%f", f); };
+	void print(char * s) {};
+	void print(char c) { serial_write(hSerial, (unsigned char*)&c, 1); };
+}; 
+
+ArduinoSerial Serial;
+
+uint32_t find_nonce(uint8_t * payload, uint32_t nonce=0, int timeout=15) {
+	char hex[128];
+
+	printf("\n--- find_nonce ---\n");
+	printf("%s (find_nonce), start nonce 0x%08x\n", btoh(hex, payload, 64), nonce);
+
+	uint8_t buf[32+16];
+	uint8_t * midstate = buf;
+	uint8_t * block_tail = buf+32;
+
+	memcpy(midstate, payload, 32);
+	strreverse(midstate, 32);
+
+	memcpy(block_tail, payload+64-12, 12);
+	strreverse(block_tail, 12);
+	bufreverse(block_tail, 12);
+
+	uint8_t hash[32];
+	SHA256_CTX ctx;
+
+	for (int start=millis(),seconds=0;;nonce++) {
+
+		// apply midstate
+		SHA256_Init(&ctx);
+		memcpy(&ctx.h, midstate, 32);
+		ctx.Nl = 512;
+
+		// set nonce and hash the remaining bytes
+		*(uint32_t*)(block_tail+12) = htonl(nonce);
+		SHA256_Update(&ctx, block_tail, 16);
+		SHA256_Final(hash, &ctx);
+
+		// hash the result
+		SHA256(hash, 32, hash);
+
+		int end = millis();
+		if (end-start>=1000) {
+			seconds++;
+			start = end;
+#ifdef DEBUG
+			Serial.print((float)nonce/seconds);
+			Serial.println(" hashes/sec.");
+#endif
+		}
+
+		if (seconds>=timeout || (hash[31]==0 && hash[30]==0 && hash[29]==0 /*&& hash[28]==0*/ )) {
+#ifdef DEBUG
+			char hex[65];
+			printf("found! 0x%08x\n", nonce);
+			Serial.println(btoh(hex, hash, 32));
+#endif
+			return nonce;
+		}
+
+		if (nonce==0xffffffff)
+			break;
+	}
+	return nonce;
+}
+
+int double_hashing(uint8_t * block_header, uint32_t nonce) {
+
+	printf("\n--- double_hashing ---\n");
+	SHA256_CTX ctx;
+	uint8_t hash[32];
+	char hex[128];
+	*(uint32_t*)(block_header+76) = htonl(nonce);
+	SHA256(block_header, 80, hash);
+	SHA256(hash, 32, hash);
+	printf("%s (double hashing) nonce: 0x%08x\n", btoh(hex, hash, 32), nonce);
+	return 0;
+}
+
+const int len = 128;
+const int lenb = 80;
+uint8_t data[len];
+int nonce;
+
+void tests() {
+
+#if(0)
+	// genesis block
+	char block0[] = "0100000000000000000000000000000000000000000000000000000000000000000000003ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b1e5e4a29ab5f49ffff001d1dac2b7c0101000000010000000000000000000000000000000000000000000000000000000000000000ffffffff4d04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73ffffffff0100f2052a01000000434104678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5fac00000000";
+	nonce = 0x1dac2b7c;
+	htob(data, block0, 128);
+	double_hashing(data, nonce);
+#endif
+
+#if(0)
+	// test block (reversed)
+	char block1[] = "0000000120c8222d0497a7ab44a1a2c7bf39de941c9970b1dc7cdc400000079700000000e88aabe1f353238c668d8a4df9318e614c10c474f8cdf8bc5f6397b946c33d7c4e7242c31a098ea500000000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000080020000";
+	char midstate1[] = "33c5bf5751ec7f7e056443b5aee3800331432c83f404d9de38b94ecbf907b92d";
+	char payload1[] = "2db907f9cb4eb938ded904f4832c43310380e3aeb54364057e7fec5157bfc5330000000000000000000000008000000000000000a58e091ac342724e7c3dc346";
+	nonce = 0x063c5e01;
+	htob(data, block1, len);
+	bufreverse(data, 80);
+	double_hashing(data, nonce);
+	htob(data, payload1, 64);
+	find_nonce(data, nonce);
+#endif
+
+#if(0)
+	// test payload
+	char payload2[] = "ce92099c5a80bb81c52990d5c0924c625fd25a535640607d5a4bdf8174e2c8d500000000000000000000000080000000000000000b290c1a42313b4f21b5bcb8";
+	nonce = 0x8e0b31c5;
+	htob(data, payload2, 64);
+	find_nonce(data, nonce);
+#endif
+
+#if(0)
+	// golden payload
+	char payload3[] = "4679ba4ec99876bf4bfe086082b400254df6c356451471139a3afa71e48f544a000000000000000000000000000000000000000087320b1a1426674f2fa722ce";
+	nonce = 0x000187a2;
+	htob(data, payload3, 64);
+	find_nonce(data, nonce);
+#endif
+
+#if (0)
+	// work division
+	char payload4[] = "2e4c8f91fd595d2d7ea20aaacb64a2a04382860277cf26b6a1ee04c56a5b504a00000000000000000000000000000000000000006461011ac906a951fb9b3c73";
+	nonce = 0x04c0fdb4;
+	htob(data, payload4, 64);
+	find_nonce(data, nonce);
+	nonce = 0x82540e46;
+	find_nonce(data, nonce);
+#endif
+}
+
+#define golden_ob 0x4679ba4e
+#define golden_nonce 0x000187a2
+#define workdiv_sig 0x2e4c8f91
+#define workdiv1 0x04C0FDB4
+#define workdiv2 0x82540E46
+#define random_nonce 0xdeadbeef
+
+const int size = 64;
+uint8_t payload[size];
+
+void setup() {
+  Serial.begin(115200);
+#ifdef DEBUG
+  delay(1000);
+  char payload_hex[] = "4679ba4ec99876bf4bfe086082b400254df6c356451471139a3afa71e48f544a000000000000000000000000000000000000000087320b1a1426674f2fa722ce";  
+  find_nonce(htob(payload, payload_hex, size), 0x000187a2); // should print da9fcfb26c7f5b30746b1c068c2bd690a8fa8c16e4a80841b604000000000000
+#endif
+  tests();
+}
+
+void reply(uint32_t data) {
+  printf("send: 0x%08x\n", data);
+  data = htonl(data);
+  Serial.write((byte*)&data, sizeof(data));
+}
+
+void loop() {
+  if (!Serial.available() || !Serial.readBytes(payload, size))
+    return;
+  switch(htonl(*(uint32_t*)payload)) {
+    case golden_ob: reply(golden_nonce); break;
+    case workdiv_sig: reply(workdiv1); break;
+    default: reply(find_nonce(payload)); break;
+  }
+}
+
+
+int main() {
+	setup();
+	for(;;) {
+		loop();
+		Sleep(1);
+	}
+
+}
+

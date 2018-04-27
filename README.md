@@ -37,7 +37,7 @@ so every hash takes two 64-byte SHA256 blocks, consdering midstate optimization.
 
 ## Emulator
 
-There is also a PC version of the serial port miner (see icarus_emul directory).
+There is also a PC version of the serial port miner (see cppversion directory).
 You will need a serial port emulator, e.g. [com0com](https://code.google.com/archive/p/powersdr-iq/downloads).
 It creates COM port pairs, e.g. you listen on COM8 and specify COM9 for the BFGMiner.
 Emulator hash speed is currently about 1.14 million hashes a second (could be improved, maybe 6-7 million hashes per CPU core).
@@ -102,22 +102,18 @@ Simply apply the state from the payload, process the remaining 16 (80-64) bytes 
 (including nonce in the end), and hash the result.
 
 ```c
-SHA256_CTX ctx;
-
 // apply midstate
-memcpy(&ctx.state, midstate, 32);
-ctx.datalen = 0;
-ctx.bitlen = 512;
+SHA256_Init(&ctx);
+memcpy(&ctx.h, midstate, 32);
+ctx.Nl = 512;
 
 // set nonce and hash the remaining bytes
 *(uint32_t*)(block_tail+12) = htonl(nonce);
-sha256_update(&ctx, block_tail, 16);
-sha256_final(&ctx, hash);
+SHA256_Update(&ctx, block_tail, 16);
+SHA256_Final(hash, &ctx);
 
 // hash the result
-sha256_init(&ctx);
-sha256_update(&ctx, hash, 32);
-sha256_final(&ctx, hash);
+SHA256(hash, 32, hash);
 ```
 
 ### Scrypt
