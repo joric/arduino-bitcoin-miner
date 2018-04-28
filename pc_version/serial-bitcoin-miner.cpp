@@ -189,6 +189,7 @@ int double_hashing(uint8_t * block_header, uint32_t nonce, int check_midstate=0)
 		SHA256_Update(&ctx, block_header, 64);
 		printf("m 0x%08x, midstate: %s\n", nonce, btoh(hex, (uint8_t*)&ctx.h, 32));
 		SHA256_Update(&ctx, block_header+64, 16);
+		SHA256_Final(hash, &ctx);
 	} else {
 		SHA256(block_header, 80, hash);
 	}
