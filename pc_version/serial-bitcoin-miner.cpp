@@ -3,14 +3,12 @@
 // use com pairs, e.g. you listen on COM8 and specify COM9 for the bfgminer:
 // bfgminer -o http://localhost:19001 -u admin1 -p 123 -S icarus:\\.\COM9
 
-#define DEBUG
+int serial_port = 8;
 
 #include <windows.h>
 #include <math.h>
 #include <stdio.h>
 #include <openssl/sha.h>
-
-#define SERIAL_DEVICE "\\\\.\\COM8"
 
 #define uint8_t unsigned char
 #define uint32_t unsigned int
@@ -50,7 +48,7 @@ int serial_write(HANDLE hSerial, unsigned char * buf, int size) {
 int serial_read(HANDLE hSerial, unsigned char * buf, int size) {
 	DWORD bytes_read = 0;
 	ReadFile(hSerial, buf, size, &bytes_read, NULL);
-	if (bytes_read) printf("%d bytes read\n", (int)bytes_read);
+	if (bytes_read) printf("recv: %d bytes\n", (int)bytes_read);
 	return (int)bytes_read;
 }
 
@@ -60,10 +58,12 @@ int serial_open(HANDLE * pSerial, int speed) {
 
 	DCB dcbSerialParams = {0};
 	COMMTIMEOUTS timeouts = {0};
+	char device[32];
+	sprintf (device, "\\\\.\\COM%d", serial_port);
 
-	printf("Opening %s... ", SERIAL_DEVICE);
+	printf("Opening COM%d... ", serial_port);
 
-	hSerial = CreateFile(SERIAL_DEVICE, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
+	hSerial = CreateFile(device, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
 
 	if (hSerial == INVALID_HANDLE_VALUE) {
 		printf("Error\n");
@@ -125,10 +125,10 @@ struct ArduinoSerial {
 
 ArduinoSerial Serial;
 
-uint32_t find_nonce(uint8_t * payload, uint32_t nonce=0, int timeout=15) {
+uint32_t find_nonce(uint8_t * payload, uint32_t nonce=0, int timeout=10) {
 	char hex[128];
 
-	printf("> 0x%08x, payload: %s...\n", nonce, btoh(hex, payload, 32));
+	printf("> 0x%08x, payload: %s...\n", nonce, btoh(hex, payload, 32-3));
 
 	uint8_t buf[32+16];
 	uint8_t * midstate = buf;
@@ -159,23 +159,17 @@ uint32_t find_nonce(uint8_t * payload, uint32_t nonce=0, int timeout=15) {
 		// hash the result
 		SHA256(hash, 32, hash);
 
+		if (seconds>=timeout || (hash[31]==0 && hash[30]==0 && hash[29]==0 /*&& hash[28]==0*/ )) {
+			char hex[65];
+			printf("< 0x%08x, hash: %s\n", nonce, btoh(hex, hash, 32));
+			return nonce;
+		}
+
 		int end = millis();
 		if (end-start>=1000) {
 			seconds++;
 			start = end;
-#ifdef DEBUG
-			Serial.print((float)nonce/seconds);
-			Serial.println(" hashes/sec.");
-#endif
-		}
-
-		if (seconds>=timeout || (hash[31]==0 && hash[30]==0 && hash[29]==0 /*&& hash[28]==0*/ )) {
-#ifdef DEBUG
-			char hex[65];
-			printf("< 0x%08x, hash: ", nonce);
-			Serial.println(btoh(hex, hash, 32));
-#endif
-			return nonce;
+			printf("%ds %.2fMh/s\n", seconds, (float)nonce/1000/1000/seconds);
 		}
 
 		if (nonce==0xffffffff)
@@ -184,14 +178,22 @@ uint32_t find_nonce(uint8_t * payload, uint32_t nonce=0, int timeout=15) {
 	return nonce;
 }
 
-int double_hashing(uint8_t * block_header, uint32_t nonce) {
+int double_hashing(uint8_t * block_header, uint32_t nonce, int check_midstate=0) {
 	SHA256_CTX ctx;
 	uint8_t hash[32];
 	char hex[128];
 	*(uint32_t*)(block_header+76) = htonl(nonce);
-	SHA256(block_header, 80, hash);
+	printf("> 0x%08x, block: %s...\n", nonce, btoh(hex, block_header, 32-3));
+	if (check_midstate) {
+		SHA256_Init(&ctx);
+		SHA256_Update(&ctx, block_header, 64);
+		printf("m 0x%08x, midstate: %s\n", nonce, btoh(hex, (uint8_t*)&ctx.h, 32));
+		SHA256_Update(&ctx, block_header+64, 16);
+	} else {
+		SHA256(block_header, 80, hash);
+	}
 	SHA256(hash, 32, hash);
-	printf("D 0x%08x, hash: %s\n", nonce, btoh(hex, hash, 32));
+	printf("< 0x%08x, hash: %s\n", nonce, btoh(hex, hash, 32));
 	return 0;
 }
 
@@ -201,6 +203,7 @@ uint8_t data[len];
 int nonce;
 
 void tests() {
+	printf("Running tests...\n");
 
 #if(1)
 	// genesis block
@@ -218,7 +221,7 @@ void tests() {
 	nonce = 0x063c5e01;
 	htob(data, block1, len);
 	bufreverse(data, 80);
-	double_hashing(data, nonce);
+	double_hashing(data, nonce, 1);
 	htob(data, payload1, 64);
 	find_nonce(data, nonce);
 #endif
@@ -261,38 +264,36 @@ const int size = 64;
 uint8_t payload[size];
 
 void setup() {
-  Serial.begin(115200);
-#ifdef DEBUG
-  delay(1000);
-  char payload_hex[] = "4679ba4ec99876bf4bfe086082b400254df6c356451471139a3afa71e48f544a000000000000000000000000000000000000000087320b1a1426674f2fa722ce";  
-  find_nonce(htob(payload, payload_hex, size), 0x000187a2); // should print da9fcfb26c7f5b30746b1c068c2bd690a8fa8c16e4a80841b604000000000000
-  tests();
-#endif
+	tests();
+	Serial.begin(115200);
 }
 
 void reply(uint32_t data) {
-  printf("send: 0x%08x\n", data);
-  data = htonl(data);
-  Serial.write((byte*)&data, sizeof(data));
+	printf("sent: 0x%08x\n", data);
+	data = htonl(data);
+	Serial.write((byte*)&data, sizeof(data));
 }
 
 void loop() {
-  if (!Serial.available() || !Serial.readBytes(payload, size))
-    return;
-  switch(htonl(*(uint32_t*)payload)) {
-    case golden_ob: reply(golden_nonce); break;
-    case workdiv_sig: reply(workdiv1); break;
-    default: reply(find_nonce(payload)); break;
-  }
+	if (!Serial.available() || !Serial.readBytes(payload, size))
+		return;
+	switch(htonl(*(uint32_t*)payload)) {
+		case golden_ob: reply(golden_nonce); break;
+		case workdiv_sig: reply(workdiv1); break;
+		default: reply(find_nonce(payload)); break;
+	}
 }
 
-
-int main() {
+int main(int argc, char * argv[]) {
+	if (argc>1) {
+		sscanf(argv[1], "%d", &serial_port);
+	} else {
+		printf("Serial port is not specified, using %d\n", serial_port);
+	}
 	setup();
 	for(;;) {
 		loop();
 		Sleep(1);
 	}
-
 }
 
