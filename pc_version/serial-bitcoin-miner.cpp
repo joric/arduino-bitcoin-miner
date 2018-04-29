@@ -135,7 +135,8 @@ volatile int terminate = 0;
 uint32_t find_nonce(uint8_t * payload, uint32_t nonce=0, uint32_t end_nonce=0xffffffff, int thread=0, int timeout=10) {
 	char hex[128];
 
-	printf("> 0x%08x, payload: %s...\n", nonce, btoh(hex, payload, 32-3));
+	if (thread==0)
+		printf("> 0x%08x, payload: %s...\n", nonce, btoh(hex, payload, 32-3));
 
 	uint8_t buf[32+16];
 	uint8_t * midstate = buf;
@@ -189,7 +190,7 @@ uint32_t find_nonce(uint8_t * payload, uint32_t nonce=0, uint32_t end_nonce=0xff
 			if (thread==0) {
 				for (int i=0; i<threads_num; i++)
 					mh += mhs[i];
-				printf("%ds %.2fMh/s\n", seconds, mh, threads_num);
+				printf("%ds %.2fMh/s\n", seconds, mh);
 			}
 		}
 
