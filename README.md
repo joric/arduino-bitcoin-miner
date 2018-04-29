@@ -69,18 +69,19 @@ Both testnet and regtest work well with cpuminer (and it supports fallback from 
 
 Most miners are icarus-based, should work for all STM32 and AVR-based miners that use USB serial port emulation.
 
+### Icarus
+
 * No detection is needed (no special command for this).
 * Wait for data. Each data packet is 64 bytes: 32 bytes midstate + 20 fill bytes (any value) + last 12 bytes of block header.
 * Send back the results, i.e. when valid share is found, send back the 4-byte result nonce immediately.
 
-BFGMiner specific:
+Read more about the protocol here: http://en.qi-hardware.com/wiki/Icarus#Communication_protocol_V3
+
+### BFGMiner specific
 
 * BFGMiner tests block with nonce 0x000187a2 first. Since we need to test only 100258 values the reply should be instant.
 * Sends work division payload 2e4c8f91(...). Expects 0x04c0fdb4, 0x82540e46, 0x417c0f36, 0x60c994d5 for 1, 2, 4, 8 cores.
 * If no data sent back in ~11.3 seconds (full cover time on 32bit range at 380MH/s FPGA), miner sends another work.
-
-
-Read more about the protocol here: http://en.qi-hardware.com/wiki/Icarus#Communication_protocol_V3
 
 
 ## Hotplug
