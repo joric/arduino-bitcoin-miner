@@ -76,7 +76,7 @@ Most miners are icarus-based, should work for all STM32 and AVR-based miners tha
 BFGMiner specific:
 
 * BFGMiner tests block with nonce 0x000187a2 first. Since we need to test only 100258 values the reply should be instant.
-* Sends special work (2e4c8f91...) to determine work division. Expects 0x04c0fdb4 or 0x82540e46 for single or dual core.
+* Sends work division payload 2e4c8f91(...). Expects 0x04c0fdb4, 0x82540e46, 0x417c0f36, 0x60c994d5 for 1, 2, 4, 8 cores.
 * If no data sent back in ~11.3 seconds (full cover time on 32bit range at 380MH/s FPGA), miner sends another work.
 
 
