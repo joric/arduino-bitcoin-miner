@@ -1,4 +1,4 @@
-// win32 serial port bitcoin miner
+// win32 serial port bitcoin miner (build with tdm-gcc)
 // com0com emulator: https://code.google.com/archive/p/powersdr-iq/downloads
 // use com pairs, e.g. you listen on COM8 and specify COM9 for the bfgminer:
 // bfgminer -o http://localhost:19001 -u admin1 -p 123 -S icarus:\\.\COM9
@@ -9,11 +9,16 @@ int serial_port = 8;
 #include <math.h>
 #include <stdio.h>
 #include <openssl/sha.h>
+#include <pthread.h>
 
 #define uint8_t unsigned char
 #define uint32_t unsigned int
 #define delay(ms) Sleep(ms)
 #define millis() GetTickCount()
+
+const int threads_num = 4;
+uint32_t ans[threads_num];
+float mhs[threads_num];
 
 inline uint32_t htonl(uint32_t x) {
   return ( ((x) << 24) | (((x) << 8) & 0x00ff0000) | (((x) >> 8) & 0x0000ff00) | ((x) >> 24) );
@@ -125,10 +130,12 @@ struct ArduinoSerial {
 
 ArduinoSerial Serial;
 
-uint32_t find_nonce(uint8_t * payload, uint32_t nonce=0, int timeout=10) {
+volatile int terminate = 0;
+
+uint32_t find_nonce(uint8_t * payload, uint32_t nonce=0, uint32_t end_nonce=0xffffffff, int thread=0, int timeout=10) {
 	char hex[128];
 
-	printf("> 0x%08x, payload: %s...\n", nonce, btoh(hex, payload, 32-3));
+	printf("> thread %d, nonce 0x%08x, payload: %s...\n", thread, nonce, btoh(hex, payload, 32-3));
 
 	uint8_t buf[32+16];
 	uint8_t * midstate = buf;
@@ -145,7 +152,9 @@ uint32_t find_nonce(uint8_t * payload, uint32_t nonce=0, int timeout=10) {
 	SHA256_CTX ctx;
 	uint32_t start_nonce = nonce;
 
-	for (int start=millis(),seconds=0;;nonce++) {
+	terminate = 0;
+
+	for (int start=millis(),seconds=0;terminate==0;nonce++) {
 
 		// apply midstate
 		SHA256_Init(&ctx);
@@ -160,9 +169,13 @@ uint32_t find_nonce(uint8_t * payload, uint32_t nonce=0, int timeout=10) {
 		// hash the result
 		SHA256(hash, 32, hash);
 
-		if (seconds>=timeout || (hash[31]==0 && hash[30]==0 && hash[29]==0 /*&& hash[28]==0*/ )) {
+		if (seconds>=timeout)
+			break;
+
+		if (hash[31]==0 && hash[30]==0 && hash[29]==0 && hash[28]==0 ) {
+			terminate = 1;
 			char hex[65];
-			printf("< 0x%08x, hash: %s\n", nonce, btoh(hex, hash, 32));
+			printf("< thread %d, nonce 0x%08x, hash: %s\n", thread, nonce, btoh(hex, hash, 32));
 			return nonce;
 		}
 
@@ -170,13 +183,20 @@ uint32_t find_nonce(uint8_t * payload, uint32_t nonce=0, int timeout=10) {
 		if (end-start>=1000) {
 			seconds++;
 			start = end;
-			printf("%ds %.2fMh/s\n", seconds, (float)(nonce-start_nonce)/1000/1000/seconds);
+			//printf("thread %d %ds %.2fMh/s\n", thread, seconds, (float)(nonce-start_nonce)/1000/1000/seconds);
+			mhs[thread] = (float)(nonce-start_nonce)/1000/1000/seconds;
+			float mh = .0f;
+			if (thread==0) {
+				for (int i=0; i<threads_num; i++)
+					mh += mhs[i];
+				printf("%ds %.2fMh/s (%d threads)\n", seconds, mh, threads_num);
+			}
 		}
 
-		if (nonce==0xffffffff)
+		if (nonce==end_nonce)
 			break;
 	}
-	return nonce;
+	return 0;
 }
 
 int double_hashing(uint8_t * block_header, uint32_t nonce, int check_midstate=0) {
@@ -199,6 +219,30 @@ int double_hashing(uint8_t * block_header, uint32_t nonce, int check_midstate=0)
 	return 0;
 }
 
+uint8_t payload_buffer[64];
+
+static void * thread_func(void * tid) {
+	uint32_t id = (int)tid;
+	uint32_t range = 0xffffffff*id/threads_num;
+	uint32_t start = range*id;
+	ans[id] = find_nonce(payload_buffer, start, start+range-1, id);
+}
+
+int find_nonce_mt(uint8_t * payload) {
+	terminate = 1;
+	pthread_t threads[threads_num];
+	memcpy(payload_buffer, payload, 64);
+	for (int i=0; i<threads_num; i++)
+		pthread_create ( threads + i, NULL, thread_func, (void*)i);
+	for (int i=0; i<threads_num; i++)
+		pthread_join ( threads[i], NULL );
+	for(int i=0; i<threads_num; ++i)
+		if (ans[i]!=0)
+			return ans[i];
+	return 0;
+}
+
+
 void tests() {
 	printf("Running tests...\n");
 	uint8_t buf[512];
@@ -208,6 +252,7 @@ void tests() {
 	find_nonce(htob(buf, "ce92099c5a80bb81c52990d5c0924c625fd25a535640607d5a4bdf8174e2c8d500000000000000000000000080000000000000000b290c1a42313b4f21b5bcb8"), 0x8e0b31c5);
 	find_nonce(htob(buf, "4679ba4ec99876bf4bfe086082b400254df6c356451471139a3afa71e48f544a000000000000000000000000000000000000000087320b1a1426674f2fa722ce"), 0x000187a2);
 	for (uint32_t i=0, n[] = {0x04c0fdb4, 0x82540e46, 0x417c0f36, 0x60c994d5}; i<4; find_nonce(htob(buf, "2e4c8f91fd595d2d7ea20aaacb64a2a04382860277cf26b6a1ee04c56a5b504a00000000000000000000000000000000000000006461011ac906a951fb9b3c73"), n[i++]));
+	//find_nonce_mt(htob(buf, "2e4c8f91fd595d2d7ea20aaacb64a2a04382860277cf26b6a1ee04c56a5b504a00000000000000000000000000000000000000006461011ac906a951fb9b3c73"));
 }
 
 #define golden_ob 0x4679ba4e
@@ -236,7 +281,7 @@ void loop() {
 	switch(htonl(*(uint32_t*)payload)) {
 		case golden_ob: reply(golden_nonce); break;
 		case workdiv_sig: reply(workdiv); break;
-		default: reply(find_nonce(payload)); break;
+		default: reply(find_nonce_mt(payload)); break;
 	}
 }
 
