@@ -223,8 +223,8 @@ uint8_t payload_buffer[64];
 
 static void * thread_func(void * tid) {
 	uint32_t id = (int)tid;
-	uint32_t range = 0xffffffff*id/threads_num;
-	uint32_t start = range*id;
+	uint32_t range = 0x100000000L / threads_num;
+	uint32_t start = range * id;
 	ans[id] = find_nonce(payload_buffer, start, start+range-1, id);
 }
 
