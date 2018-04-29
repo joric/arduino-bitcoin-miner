@@ -67,8 +67,6 @@ Both testnet and regtest work well with cpuminer (and it supports fallback from 
 
 ## Protocol
 
-Most miners are icarus-based, should work for all STM32 and AVR-based miners that use USB serial port emulation.
-
 ### Icarus
 
 * No detection is needed (no special command for this).
@@ -77,7 +75,7 @@ Most miners are icarus-based, should work for all STM32 and AVR-based miners tha
 
 Read more about the protocol here: http://en.qi-hardware.com/wiki/Icarus#Communication_protocol_V3
 
-### BFGMiner specific
+#### BFGMiner specific
 
 * BFGMiner tests block with nonce 0x000187a2 first. Since we need to test only 100258 values the reply should be instant.
 * Sends work division payload 2e4c8f91(...). Expects 0x04c0fdb4, 0x82540e46, 0x417c0f36, 0x60c994d5 for 1, 2, 4, 8 cores.
