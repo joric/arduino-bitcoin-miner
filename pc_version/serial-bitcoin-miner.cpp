@@ -20,22 +20,22 @@ inline uint32_t htonl(uint32_t x) {
 }
 
 void strreverse(uint8_t * buf, int len) {
-  for (uint8_t *b = buf, *e = buf+len-1, tmp; b<e; tmp=*b, *b++=*e, *e--=tmp);
+	for (uint8_t *b = buf, *e = buf+len-1, tmp; b<e; tmp=*b, *b++=*e, *e--=tmp);
 }
 
-char *bufreverse(uint8_t * buf, int len) {
-  uint32_t * ibuf = (uint32_t *)buf;
-  for (int i=0; i<len/4; i++) ibuf[i] = htonl(ibuf[i]);
+uint8_t *bufreverse(uint8_t * buf, int len) {
+	for (uint32_t i=0, *ibuf = (uint32_t *)buf; i<len/4; ibuf[i] = htonl(ibuf[i]), i++);
+	return buf;
 }
 
-uint8_t *htob(uint8_t *dest, char *src, int len, int v=0) {
-  for (uint8_t *p=dest; sscanf(src, "%02x", &v) > 0; *p++ = v, src += 2);
-  return dest;
+uint8_t *htob(uint8_t *dest, const char *src, int len=0, int v=0) {
+	for (uint8_t *p=dest; sscanf(src, "%02x", &v)>0 && (len==0 || len>p-dest); *p++ = v, src += 2);
+	return dest;
 }
 
 char *btoh(char *dest, uint8_t *src, int len) {
-  for (char *d = dest; len--; sprintf(d, "%02x", (unsigned char)*src++), d += 2);
-  return dest;
+	for (char *d = dest; len--; sprintf(d, "%02x", (unsigned char)*src++), d += 2);
+	return dest;
 }
 
 int serial_write(HANDLE hSerial, unsigned char * buf, int size) {
@@ -198,71 +198,33 @@ int double_hashing(uint8_t * block_header, uint32_t nonce, int check_midstate=0)
 	return 0;
 }
 
-const int len = 128;
-const int lenb = 80;
-uint8_t data[len];
-int nonce;
-
 void tests() {
 	printf("Running tests...\n");
+	uint8_t buf[384];
 
-#if(1)
 	// genesis block
-	char block0[] = "0100000000000000000000000000000000000000000000000000000000000000000000003ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b1e5e4a29ab5f49ffff001d1dac2b7c0101000000010000000000000000000000000000000000000000000000000000000000000000ffffffff4d04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73ffffffff0100f2052a01000000434104678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5fac00000000";
-	nonce = 0x1dac2b7c;
-	htob(data, block0, 128);
-	double_hashing(data, nonce);
-#endif
+	double_hashing(htob(buf, "0100000000000000000000000000000000000000000000000000000000000000000000003ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b1e5e4a29ab5f49ffff001d1dac2b7c0101000000010000000000000000000000000000000000000000000000000000000000000000ffffffff4d04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73ffffffff0100f2052a01000000434104678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5fac00000000", 384), 0x1dac2b7c);
 
-#if(1)
-	// test block (reversed)
-	char block1[] = "0000000120c8222d0497a7ab44a1a2c7bf39de941c9970b1dc7cdc400000079700000000e88aabe1f353238c668d8a4df9318e614c10c474f8cdf8bc5f6397b946c33d7c4e7242c31a098ea500000000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000080020000";
-	char midstate1[] = "33c5bf5751ec7f7e056443b5aee3800331432c83f404d9de38b94ecbf907b92d";
-	char payload1[] = "2db907f9cb4eb938ded904f4832c43310380e3aeb54364057e7fec5157bfc5330000000000000000000000008000000000000000a58e091ac342724e7c3dc346";
-	nonce = 0x063c5e01;
-	htob(data, block1, len);
-	bufreverse(data, 80);
-	double_hashing(data, nonce, 1);
-	htob(data, payload1, 64);
-	find_nonce(data, nonce);
-#endif
+	// reversed test block with nonce 0x063c5e01
+	double_hashing(bufreverse(htob(buf, "0000000120c8222d0497a7ab44a1a2c7bf39de941c9970b1dc7cdc400000079700000000e88aabe1f353238c668d8a4df9318e614c10c474f8cdf8bc5f6397b946c33d7c4e7242c31a098ea500000000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000080020000"),80), 0x063c5e01, 1);
 
-#if(1)
-	// test payload
-	char payload2[] = "ce92099c5a80bb81c52990d5c0924c625fd25a535640607d5a4bdf8174e2c8d500000000000000000000000080000000000000000b290c1a42313b4f21b5bcb8";
-	nonce = 0x8e0b31c5;
-	htob(data, payload2, 64);
-	find_nonce(data, nonce);
-#endif
+	// test payload for the block above, nonce 0x063c5e01, midstate 33c5bf57..f907b92d
+	find_nonce(htob(buf, "2db907f9cb4eb938ded904f4832c43310380e3aeb54364057e7fec5157bfc5330000000000000000000000008000000000000000a58e091ac342724e7c3dc346"), 0x063c5e01);
 
-#if(1)
-	// golden payload
-	char payload3[] = "4679ba4ec99876bf4bfe086082b400254df6c356451471139a3afa71e48f544a000000000000000000000000000000000000000087320b1a1426674f2fa722ce";
-	nonce = 0x000187a2;
-	htob(data, payload3, 64);
-	find_nonce(data, nonce);
-#endif
+	// test payload with nonce 0x8e0b31c5
+	find_nonce(htob(buf, "ce92099c5a80bb81c52990d5c0924c625fd25a535640607d5a4bdf8174e2c8d500000000000000000000000080000000000000000b290c1a42313b4f21b5bcb8"), 0x8e0b31c5);
 
-#if (1)
-	// work division
-	char payload4[] = "2e4c8f91fd595d2d7ea20aaacb64a2a04382860277cf26b6a1ee04c56a5b504a00000000000000000000000000000000000000006461011ac906a951fb9b3c73";
-	nonce = 0x04c0fdb4;
-	htob(data, payload4, 64);
-	find_nonce(data, nonce);
-	nonce = 0x82540e46;
-	find_nonce(data, nonce);
-#endif
+	// golden payload with nonce 0x000187a2
+	find_nonce(htob(buf, "4679ba4ec99876bf4bfe086082b400254df6c356451471139a3afa71e48f544a000000000000000000000000000000000000000087320b1a1426674f2fa722ce"), 0x000187a2);
+
+	// test payload to determine work division, multiple nonce, 1-2-4-8 cores
+	for (uint32_t i=0, n[] = {0x04c0fdb4, 0x82540e46, 0x417c0f36, 0x60c994d5}; i<4; find_nonce(htob(buf, "2e4c8f91fd595d2d7ea20aaacb64a2a04382860277cf26b6a1ee04c56a5b504a00000000000000000000000000000000000000006461011ac906a951fb9b3c73"), n[i++]));
 }
 
 #define golden_ob 0x4679ba4e
 #define golden_nonce 0x000187a2
 #define workdiv_sig 0x2e4c8f91
-#define workdiv1 0x04C0FDB4
-#define workdiv2 0x82540E46
-#define random_nonce 0xdeadbeef
-
-const int size = 64;
-uint8_t payload[size];
+#define workdiv 0x04c0fdb4
 
 void setup() {
 	tests();
@@ -276,11 +238,15 @@ void reply(uint32_t data) {
 }
 
 void loop() {
+	const int size = 64;
+	uint8_t payload[size];
+
 	if (!Serial.available() || !Serial.readBytes(payload, size))
 		return;
+
 	switch(htonl(*(uint32_t*)payload)) {
 		case golden_ob: reply(golden_nonce); break;
-		case workdiv_sig: reply(workdiv1); break;
+		case workdiv_sig: reply(workdiv); break;
 		default: reply(find_nonce(payload)); break;
 	}
 }
