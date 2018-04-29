@@ -4,6 +4,7 @@
 // bfgminer -o http://localhost:19001 -u admin1 -p 123 -S icarus:\\.\COM9
 
 int serial_port = 8;
+const int threads_num = 4;
 
 #include <windows.h>
 #include <math.h>
@@ -16,7 +17,6 @@ int serial_port = 8;
 #define delay(ms) Sleep(ms)
 #define millis() GetTickCount()
 
-const int threads_num = 4;
 uint32_t ans[threads_num];
 float mhs[threads_num];
 
@@ -135,7 +135,7 @@ volatile int terminate = 0;
 uint32_t find_nonce(uint8_t * payload, uint32_t nonce=0, uint32_t end_nonce=0xffffffff, int thread=0, int timeout=10) {
 	char hex[128];
 
-	printf("> thread %d, nonce 0x%08x, payload: %s...\n", thread, nonce, btoh(hex, payload, 32-3));
+	printf("> 0x%08x, payload: %s...\n", nonce, btoh(hex, payload, 32-3));
 
 	uint8_t buf[32+16];
 	uint8_t * midstate = buf;
@@ -175,7 +175,7 @@ uint32_t find_nonce(uint8_t * payload, uint32_t nonce=0, uint32_t end_nonce=0xff
 		if (hash[31]==0 && hash[30]==0 && hash[29]==0 && hash[28]==0 ) {
 			terminate = 1;
 			char hex[65];
-			printf("< thread %d, nonce 0x%08x, hash: %s\n", thread, nonce, btoh(hex, hash, 32));
+			printf("< nonce 0x%08x, hash: %s\n", nonce, btoh(hex, hash, 32));
 			return nonce;
 		}
 
@@ -189,7 +189,7 @@ uint32_t find_nonce(uint8_t * payload, uint32_t nonce=0, uint32_t end_nonce=0xff
 			if (thread==0) {
 				for (int i=0; i<threads_num; i++)
 					mh += mhs[i];
-				printf("%ds %.2fMh/s (%d threads)\n", seconds, mh, threads_num);
+				printf("%ds %.2fMh/s\n", seconds, mh, threads_num);
 			}
 		}
 
