@@ -143,6 +143,7 @@ uint32_t find_nonce(uint8_t * payload, uint32_t nonce=0, int timeout=10) {
 
 	uint8_t hash[32];
 	SHA256_CTX ctx;
+	uint32_t start_nonce = nonce;
 
 	for (int start=millis(),seconds=0;;nonce++) {
 
@@ -169,7 +170,7 @@ uint32_t find_nonce(uint8_t * payload, uint32_t nonce=0, int timeout=10) {
 		if (end-start>=1000) {
 			seconds++;
 			start = end;
-			printf("%ds %.2fMh/s\n", seconds, (float)nonce/1000/1000/seconds);
+			printf("%ds %.2fMh/s\n", seconds, (float)(nonce-start_nonce)/1000/1000/seconds);
 		}
 
 		if (nonce==0xffffffff)
