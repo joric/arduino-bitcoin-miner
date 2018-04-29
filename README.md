@@ -67,6 +67,8 @@ Both testnet and regtest work well with cpuminer (and it supports fallback from 
 
 ## Protocol
 
+This miner uses Icarus protocol via USB serial port emulation (there is no USB autodetection, you have to specify a COM port).
+
 ### Icarus
 
 * No detection is needed (no special command for this).
@@ -81,14 +83,12 @@ Read more about the protocol here: http://en.qi-hardware.com/wiki/Icarus#Communi
 * Sends work division payload 2e4c8f91(...). Expects 0x04c0fdb4, 0x82540e46, 0x417c0f36, 0x60c994d5 for 1, 2, 4, 8 cores.
 * If no data sent back in ~11.3 seconds (full cover time on 32bit range at 380MH/s FPGA), miner sends another work.
 
+#### USB autodetection
 
-## Hotplug
+Not implemented yet. Original Icarus uses either VID_067B & PID_2303 (USBDeviceShare) or VID_1FC9 & PID_0083 (LPC USB VCom Port driver).
+Default Arduino Leonardo driver uses VID_2341 & PID_8036, and neither BFGMiner nor CGMiner recognize it as an USB mining device.
+Changing hardware ID's requires updating bootloader and fixing the driver.
 
-USB autodetection is not implemented yet, you have to specify a COM port.
-Default Arduino Leonardo driver uses VID_2341 & PID_8036,
-and neither BFGMiner nor CGMiner recognize it as an USB mining device.
-Original ICA uses either VID_067B & PID_2303 (USBDeviceShare) or VID_1FC9 & PID_0083 (LPC USB VCom Port driver).
-Changing hardware ids requires updating bootloader and fixing the driver.
 
 ## Algorithms
 
