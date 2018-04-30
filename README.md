@@ -65,6 +65,10 @@ Both testnet and regtest work well with cpuminer (and it supports fallback from 
 
 `minerd -a sha256d -o http://localhost:19001 -O admin1:123 --coinbase-addr=<solo mining address>`
 
+CGMiner 3.7.2 also supports testnet and getwork, use --gpu-platform 1 for laptop nvidia cards (1030 gives about 200 Mh/s):
+
+`cgminer -o http://localhost:19001 -O admin1:123 --gpu-platform 1`
+
 ## Protocol
 
 This miner uses Icarus protocol via USB serial port emulation (there is no USB autodetection, you have to specify a COM port).
