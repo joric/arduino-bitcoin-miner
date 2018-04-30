@@ -58,67 +58,30 @@ int serial_read(HANDLE hSerial, unsigned char * buf, int size) {
 }
 
 int serial_open(HANDLE * pSerial, int speed) {
-
 	HANDLE hSerial;
-
 	DCB dcbSerialParams = {0};
 	COMMTIMEOUTS timeouts = {0};
 	char device[32];
 	sprintf (device, "\\\\.\\COM%d", serial_port);
-
-	printf("Opening COM%d... ", serial_port);
-
 	hSerial = CreateFile(device, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
-
-	if (hSerial == INVALID_HANDLE_VALUE) {
-		printf("Error\n");
-		return -1;
-	}
-
-	printf("OK\n");
-
-	// Set device parameters (115200 baud, arduino default 1 stop bit, no parity)
+	if (hSerial == INVALID_HANDLE_VALUE) return -1;
 	dcbSerialParams.DCBlength = sizeof(dcbSerialParams);
-
-	if (GetCommState(hSerial, &dcbSerialParams) == 0) {
-		printf("Error getting device state\n");
-		CloseHandle(hSerial);
-		return -1;
-	}
-
+	if (GetCommState(hSerial, &dcbSerialParams) == 0) return -1;
 	dcbSerialParams.BaudRate = speed;
 	dcbSerialParams.ByteSize = 8;
 	dcbSerialParams.StopBits = ONESTOPBIT;
 	dcbSerialParams.Parity = NOPARITY;
-
-	if(SetCommState(hSerial, &dcbSerialParams) == 0) {
-		printf("Error setting device parameters\n");
-		CloseHandle(hSerial);
-		return -1;
-	}
-
-	// Set COM port timeout settings
-	timeouts.ReadIntervalTimeout = 50;
-	timeouts.ReadTotalTimeoutConstant = 50;
-	timeouts.ReadTotalTimeoutMultiplier = 10;
-	timeouts.WriteTotalTimeoutConstant = 50;
-	timeouts.WriteTotalTimeoutMultiplier = 10;
-
-	if(SetCommTimeouts(hSerial, &timeouts) == 0)
-	{
-		printf("Error setting timeouts\n");
-		CloseHandle(hSerial);
-		return -1;
-	}
-
+	if (SetCommState(hSerial, &dcbSerialParams) == 0) return -1;
+	timeouts.ReadIntervalTimeout = timeouts.ReadTotalTimeoutConstant = timeouts.WriteTotalTimeoutConstant = 50;
+	timeouts.ReadTotalTimeoutMultiplier = timeouts.WriteTotalTimeoutMultiplier = 10;
+	if (SetCommTimeouts(hSerial, &timeouts) == 0) return -1;
 	*pSerial = hSerial;
-
 	return 0;
 }
 
 struct ArduinoSerial {
 	HANDLE hSerial;
-	void begin(int speed) { serial_open(&hSerial, speed); }
+	void begin(int speed) { printf("Opening COM%d... %s\n", serial_port, serial_open(&hSerial, speed)==-1 ? "Fail" : "OK"); }
 	int available() { return 1; }
 	int readBytes(unsigned char * buf, int size) { return serial_read(hSerial, buf, size); }
 	int write(unsigned char * buf, int size) { return serial_write(hSerial, buf, size); }
@@ -156,7 +119,6 @@ uint32_t find_nonce(uint8_t * payload, uint32_t nonce=0, uint32_t end_nonce=0xff
 	terminate = 0;
 
 	for (int start=millis(),seconds=0;terminate==0;nonce++) {
-
 		// apply midstate
 		SHA256_Init(&ctx);
 		memcpy(&ctx.h, midstate, 32);
@@ -193,7 +155,6 @@ uint32_t find_nonce(uint8_t * payload, uint32_t nonce=0, uint32_t end_nonce=0xff
 				printf("%ds %.2fMh/s\n", seconds, mh);
 			}
 		}
-
 		if (nonce==end_nonce)
 			break;
 	}
@@ -233,13 +194,9 @@ int find_nonce_mt(uint8_t * payload) {
 	terminate = 1;
 	pthread_t threads[threads_num];
 	memcpy(payload_buffer, payload, 64);
-	for (int i=0; i<threads_num; i++)
-		pthread_create ( threads + i, NULL, thread_func, (void*)i);
-	for (int i=0; i<threads_num; i++)
-		pthread_join ( threads[i], NULL );
-	for(int i=0; i<threads_num; ++i)
-		if (ans[i]!=0)
-			return ans[i];
+	for (int i=0; i<threads_num; i++) pthread_create (threads + i, NULL, thread_func, (void*)i);
+	for (int i=0; i<threads_num; i++) pthread_join (threads[i], NULL);
+	for (int i=0; i<threads_num; i++) if (ans[i]!=0) return ans[i];
 	return 0;
 }
 
@@ -287,11 +244,7 @@ void loop() {
 }
 
 int main(int argc, char * argv[]) {
-	if (argc>1) {
-		sscanf(argv[1], "%d", &serial_port);
-	} else {
-		printf("Serial port is not specified, using %d\n", serial_port);
-	}
+	argc>1 ? sscanf(argv[1], "%d", &serial_port) : printf("Serial port is not specified, using %d\n", serial_port);
 	setup();
 	for(;;) {
 		loop();
