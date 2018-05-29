@@ -89,7 +89,8 @@ Read more about the protocol here: http://en.qi-hardware.com/wiki/Icarus#Communi
 
 #### USB autodetection
 
-Not implemented yet. Original Icarus uses either VID_067B & PID_2303 (USBDeviceShare) or VID_1FC9 & PID_0083 (LPC USB VCom Port driver).
+Not implemented yet, you have to specify a COM port in the command line.
+Original Icarus uses either VID_067B & PID_2303 (USBDeviceShare) or VID_1FC9 & PID_0083 (LPC USB VCom Port driver).
 Default Arduino Leonardo driver uses VID_2341 & PID_8036, and neither BFGMiner nor CGMiner recognize it as an USB mining device.
 Changing hardware ID's requires updating bootloader and fixing the driver.
 
