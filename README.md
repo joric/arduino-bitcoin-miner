@@ -29,7 +29,8 @@ so every hash takes two 64-byte SHA256 blocks, consdering midstate optimization.
 
 ## What if
 
-* You need 1.5 TH/s for dollar a day or 42 TH/s for Bitcoin a year, see [Mining Profitability Calculator](https://www.cryptocompare.com/mining/calculator/) (numbers may vary).
+According to [Mining Profitability Calculator](https://www.cryptocompare.com/mining/calculator/) it's 1.5 TH/s for $1 a day or 42 TH/s for 1 BTC a year (numbers may vary), so:
+
 * At 150 hashes a second per Arduino, mining one dollar a day would need 10 billion Arduinos.
 * Pro Micro consumes 200 mA, 10 billion will need 2 gigawatts, slightly more than Dr. Brown needed for a time machine.
 * With an average price $0.2 per kWh the 2 gigawatt rig will cost you about $10M a day (minus one dollar).
