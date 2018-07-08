@@ -29,10 +29,10 @@ so every hash takes two 64-byte SHA256 blocks, consdering midstate optimization.
 
 ## What if
 
-According to [Mining Profitability Calculator](https://www.cryptocompare.com/mining/calculator/) it's 1.5 TH/s for $1 a day or 42 TH/s for 1 BTC a year (numbers may vary), so:
+According to [Mining Profitability Calculator](https://www.cryptocompare.com/mining/calculator/), mining $1 a day needs 1.5 TH/s, and mining 1 BTC a year needs 42 TH/s, so:
 
 * At 150 hashes a second per Arduino, mining one dollar a day would need 10 billion Arduinos
-* Pro Micro consumes 200 mA, mining $1 a day with 10 billion Arduinos rig will need 2 gigawatts of power (Great Scott!)
+* Pro Micro consumes 200 mA, mining $1 a day with a 10 billion Arduino rig will need 2 gigawatts of power (Great Scott!)
 * With an average price $0.2 per kWh mining $1 a day will cost you about $10M a day (minus one dollar you made)
 * If you prefer a single AVR chip, mining 1 Bitcoin on ATmega32U4 will theoretically take about 280 billion years
 
