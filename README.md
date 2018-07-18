@@ -14,6 +14,10 @@ Run BFGMiner from the command line using testnet-in-a-box address and an Arduino
 
 `bfgminer -o http://localhost:19001 -u admin1 -p 123 -S icarus:\\.\COM5`
 
+Or, for the mining pool (e.g. btc.com):
+
+`bfgminer -o stratum+tcp://us.ss.btc.com:25 -u test.001 -p 123 -S icarus:\\.\COM5`
+
 ## Hashrate
 
 Current hash speed is pretty abysmal, considering the 16 MHz Arduino Pro Micro (ATmega32U4 at 5v):
