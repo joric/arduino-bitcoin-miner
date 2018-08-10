@@ -6,6 +6,18 @@ Arduino Bitcoin Miner
 
 [![Arduino Bitcoin Miner](http://img.youtube.com/vi/GMjrvpc9zDU/0.jpg)](https://www.youtube.com/watch?v=GMjrvpc9zDU)
 
+## Software
+
+* [BFGMiner 4.10.6](http://bfgminer.org/files/4.10.6/bfgminer-4.10.6-win64.zip)
+* [CGMiner 3.7.2](https://cryptomining-blog.com/wp-content/download/cgminer-3.7.2-windows.rar)
+* [CPUMiner 2.5.0](https://github.com/pooler/cpuminer/releases/download/v2.5.0/pooler-cpuminer-2.5.0-win64.zip)
+* [Serial port emulator](https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/powersdr-iq/setup_com0com_W7_x64_signed.exe)
+* [Arduino IDE](https://www.arduino.cc/download_handler.php?f=/arduino-1.8.5-windows.exe)
+
+## Hardware
+
+* [Arduino Pro Micro](https://www.aliexpress.com/item//32846843498.html)
+
 ## Usage
 
 Build and upload sketch in Arduino IDE.
