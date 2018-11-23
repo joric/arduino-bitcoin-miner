@@ -1,7 +1,9 @@
 # arduino-bitcoin-miner
 
 Koparka Bitcoin z Arduino
-**UWAGA: Jedyne, co zrobiłem to przetłumaczyłem teksty. [ORYGINAŁ TUTAJ/ORIGINAL HERE](https://github.com/joric/arduino-bitcoin-miner)**
+**UWAGA: Jedyne, co zrobiłem to przetłumaczyłem teksty. 
+[ORYGINAŁ TUTAJ/ORIGINAL HERE](https://github.com/joric/arduino-bitcoin-miner) zrobiony przez joric'a/made by joric**
+Projekt tłumaczony przez reVox'a. Jeśli znajdziesz błędy lub rzeczy które można poprawić - poinformuj mnie :)
 
 ## Film
 
@@ -50,9 +52,9 @@ więc dwa 64-bajtowe bloki SHA256, biorąc pod uwagę optymalizację *midstate*.
 Według [Mining Profitability Calculator](https://www.cryptocompare.com/mining/calculator/), kopanie $1 na dzień wymaga 1.5 TH/s, 1 BTC na rok wymaga 42 TH/s (około).
 
 * Przy 150 hashy na sekundę na jedno Arduino, kopanie dolara dziennie wymagałoby 10 miliardów płytek Arduino (!).
-* Pro Micro pobiera 200 mA, kopanie $1 na dzień z 10 miliardowym sprzętem Arduino potrzebowałoby 2 GigaWaty energii. (Great Scott!)
+* Pro Micro pobiera 200 mA, kopanie $1 na dzień z 10 miliardowym sprzętem potrzebowałoby 2 GigaWaty energii. (Great Scott!)
 * Przy cenie $0.2 za kWh, 2 gigawaty kosztowałyby cię $10M na dzień (minus $1 który zarobisz)
-* Jeżeli wolisz jeden chip AVR, wykopanie 1 Bitcoina na ATmega32U4 teoretycznie zajmie 280 billion years (w najgorszym wypadku).
+* Jeżeli wolisz jeden chip AVR, wykopanie 1 Bitcoina na ATmega32U4 teoretycznie zajmie 280 miliardów lat (w najgorszym wypadku).
 
 ## Emulator
 
