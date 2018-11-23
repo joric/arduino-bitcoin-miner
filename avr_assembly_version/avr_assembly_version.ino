@@ -1,9 +1,9 @@
-// arduino-bitcoin-miner
-// works with ardiuno pro micro (arduino leonardo)
-// implements icarus protocol v3 with midstate support
-// works with bitcoin pools and bitcoin-in-a-box via bfgminer:
-// bfgminer -o http://localhost:19001 -u admin1 -p 123 -S icarus:\\.\COM5
-// this one makes about 150 hashes a second (millis() takes 29 clock cycles)
+// koparka-bitcoin-z-arduino
+// działa z ardiuno pro micro (arduino leonardo)
+// używa protokół icarus v3 z wsparciem midstate
+// działa z pool'ami i bitcoin-in-a-box przez bfgminer:
+// bfgminer -o http://localhost:19001 -u admin1 -p 123 -S icarus:\\.\COM5 <-- tu podaj port COM arduino
+// ten wyciąga 150 hashy na sekundę (millis() potrzebuje 29 cykli procesora)
 
 //#define DEBUG
 
@@ -50,16 +50,16 @@ uint32_t find_nonce(uint8_t * payload, uint32_t nonce=0, int timeout=15) {
 
   for (int start=millis(),seconds=0;;nonce++) {
 
-    // apply midstate
+    // dodaj midstate
     memcpy(&ctx.h, midstate, 32);
     ctx.length = 64*8;
 
-    // set nonce and hash the remaining bytes
+    // ustaw nonce i hashuj pozostałe bajty
     *(uint32_t*)(block_tail+12) = htonl(nonce);
     sha256_lastBlock(&ctx, (const void*)block_tail, 16*8);
     sha256_ctx2hash(&hash, &ctx);
 
-    // double hash the result
+    // podwójnie hashuj wynik
     sha256(&hash, (const void*)hash, 32*8);
 
     int end = millis();
