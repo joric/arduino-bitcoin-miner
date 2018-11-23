@@ -1,4 +1,4 @@
-# arduino-bitcoin-miner
+# koparka-bitcoin-z-arduino
 
 Koparka Bitcoin z Arduino
 **UWAGA: Jedyne, co zrobiłem to przetłumaczyłem teksty. 
