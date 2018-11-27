@@ -1,6 +1,6 @@
-// win32 serial port bitcoin miner (build with tdm-gcc)
-// com0com emulator: https://code.google.com/archive/p/powersdr-iq/downloads
-// use com pairs, e.g. you listen on COM8 and specify COM9 for the bfgminer:
+// koparka dla win32 (utwórz przez tdm-gcc)
+// emulator com0com: https://code.google.com/archive/p/powersdr-iq/downloads
+// użyj pary portów COM, np. nasłuchujesz na COM8 ale używasz COM9 w bfgminer:
 // bfgminer -o http://localhost:19001 -u admin1 -p 123 -S icarus:\\.\COM9
 
 int serial_port = 8;
@@ -119,17 +119,17 @@ uint32_t find_nonce(uint8_t * payload, uint32_t nonce=0, uint32_t end_nonce=0xff
 	terminate = 0;
 
 	for (int start=millis(),seconds=0;terminate==0;nonce++) {
-		// apply midstate
+		// dodaj midstate
 		SHA256_Init(&ctx);
 		memcpy(&ctx.h, midstate, 32);
 		ctx.Nl = 512;
 
-		// set nonce and hash the remaining bytes
+		// ustaw nonce i hashuj pozostałe bajty
 		*(uint32_t*)(block_tail+12) = htonl(nonce);
 		SHA256_Update(&ctx, block_tail, 16);
 		SHA256_Final(hash, &ctx);
 
-		// hash the result
+		// hashuj wyniki
 		SHA256(hash, 32, hash);
 
 		if (seconds>=timeout)
@@ -244,7 +244,7 @@ void loop() {
 }
 
 int main(int argc, char * argv[]) {
-	argc>1 ? sscanf(argv[1], "%d", &serial_port) : printf("Serial port is not specified, using %d\n", serial_port);
+	argc>1 ? sscanf(argv[1], "%d", &serial_port) : printf("Nie podano portu COM, więc używam: %d\n", serial_port);
 	setup();
 	for(;;) {
 		loop();

@@ -1,13 +1,13 @@
 // arduino-bitcoin-miner
-// works with ardiuno pro micro (arduino leonardo)
-// implements icarus protocol v3 with midstate support
-// works with bitcoin pools and bitcoin-in-a-box via bfgminer:
-// bfgminer -o http://localhost:19001 -u admin1 -p 123 -S icarus:\\.\COM5
-// this one makes about 50 hashes/second
+// działa 100% a arduino pro micro (arduino leonardo)
+// wykorzystuje protokół icarus v3 z wsparciem midstate
+// działa z pool'ami i bitcoin-in-a-box przez bfgminer:
+// bfgminer -o http://localhost:19001 -u admin1 -p 123 -S icarus:\\.\COM5 <- tu podajesz port COM arduino.
+// póki co, ta wersja wyciąga 50 hashy na sekundę
 
 //#define DEBUG
 #undef LED_BUILTIN
-#define LED_BUILTIN 17 // pro micro
+#define LED_BUILTIN 17 //led dla pro micro. można to i linię powyżej wywalić
 
 char hex[256];
 uint8_t data[256];
@@ -122,7 +122,7 @@ void sha256_final(SHA256_CTX *ctx, uint8_t hash[]) {
 
   i = ctx->datalen;
 
-  // Pad whatever data is left in the buffer.
+  // Sprawdź co zostało w buforze
   if (ctx->datalen < 56) {
     ctx->data[i++] = 0x80;
     while (i < 56)
@@ -136,7 +136,7 @@ void sha256_final(SHA256_CTX *ctx, uint8_t hash[]) {
     memset(ctx->data, 0, 56);
   }
 
-  // Append to the padding the total message's length in bits and transform.
+  // Sprawdź bufor i dodaj do niego wartości
   ctx->bitlen += ctx->datalen * 8;
   ctx->data[63] = ctx->bitlen;
   ctx->data[62] = ctx->bitlen >> 8;
@@ -148,8 +148,8 @@ void sha256_final(SHA256_CTX *ctx, uint8_t hash[]) {
   ctx->data[56] = ctx->bitlen >> 56;
   sha256_transform(ctx, ctx->data);
 
-  // Since this implementation uses little endian byte ordering and SHA uses big endian,
-  // reverse all the bytes when copying the final state to the output hash.
+  // Ta wersja używa little endiad a bajt sterujący i SHA używają big endian,
+  // musimy odwrócić bajty przed wysłaniem ich
   for (i = 0; i < 4; ++i) {
     hash[i]      = (ctx->state[0] >> (24 - i * 8)) & 0x000000ff;
     hash[i + 4]  = (ctx->state[1] >> (24 - i * 8)) & 0x000000ff;
@@ -210,18 +210,18 @@ int midstate_hashing(uint8_t *hash, uint8_t * payload, uint32_t nonce) {
   ctx.datalen = 0;
   ctx.bitlen = 512;
 
-  // set nonce and hash the remaining bytes
+  // ustaw nonce i hashuj pozostałe bajty
   *(uint32_t*)(block_tail+12) = bytereverse(nonce);
   sha256_update(&ctx, block_tail, 16);
   sha256_final(&ctx, hash);
 
-  // double hash the result
+  // podwójnie hashuj rezultat
   sha256_init(&ctx);
   sha256_update(&ctx, hash, 32);
   sha256_final(&ctx, hash);
 
-  if ( hash[31] || hash[30] ) return -1; // simplified shares (16 zero bits)
-  //if (*(uint32_t*)(hash+32-4)!=0) return -1; // real shares (32 zero bits)
+  if ( hash[31] || hash[30] ) return -1; // uproszczone share'y (16 bitów zerowe)
+  //if (*(uint32_t*)(hash+32-4)!=0) return -1; // prawdziwe share'y (32 bity zerowe)
 
   return 0;
 }
@@ -255,7 +255,7 @@ void setup() {
   }
 
 #ifdef DEBUG
-  // magic payload, hash da9fcfb26c7f5b30746b1c068c2bd690a8fa8c16e4a80841b604000000000000
+  //magiczny payload, hash da9fcfb26c7f5b30746b1c068c2bd690a8fa8c16e4a80841b604000000000000
   char payload[] = "4679ba4ec99876bf4bfe086082b400254df6c356451471139a3afa71e48f544a000000000000000000000000000000000000000087320b1a1426674f2fa722ce";
   uint32_t nonce = 0x000187a2;
   htob(data, payload, 64);
