@@ -48,9 +48,10 @@ so every hash takes two 64-byte SHA256 blocks, consdering midstate optimization.
 According to [Mining Profitability Calculator](https://www.cryptocompare.com/mining/calculator/), mining $1 a day in 2018 needs 1.5 TH/s, 1 BTC a year needs 42 TH/s (numbers may vary).
 
 * At 150 hashes a second per Arduino, mining one dollar a day would need 10 billion Arduinos.
-* Pro Micro consumes 1W, mining $1 a day with a 10 billion Arduino rig will need 10 gigawatts of power (Great Scott!)
-* With an average price $0.2 per kWh, 10 gigawatt mining rig will cost you about $2M a day (minus one dollar you make)
-* If you prefer a single AVR chip, mining 1 Bitcoin on ATmega32U4 will theoretically take about 456 billion years
+* Pro Micro consumes 200 mA, or 5V * 0.2A = 1 Wh of energy, so a 10 billion Arduino rig consumes 10 GWh.
+* With an average price of $0.2 per kWh, a 10 GWh rig will cost you $2M a day (minus one dollar you make).
+
+As for a single Arduino, mining 1 Bitcoin in 2018 takes 2.5 * 10^16 / 150 / 365 ~= 456.6 billion years.
 
 ### 2024 revisit and corrections
 
@@ -71,12 +72,7 @@ In 2018, bitcoin price fluctuated from about 15k (Jan 2018) to 4k (Dec 2018), le
 * Mining $1 a day in 2018 would need 2.5 * 10^16 / 15000 ~= 1.67 TH/s (matches 1.5 TH/s given earlier).
 * Divide by hash rate to get exact number of devices: 2.5 * 10^16 / 15000 / 150 ~= 11.1 billion Arduinos.
 
-We also need to adjust power for voltage to get energy in Watt/hours:
-
-* Pro Micro consumes 200 mA, or 5V * 0.2A = 1 Wh of energy, so a 10 billion Arduino rig consumes 10 GWh.
-* With an average price of $0.2 per kWh, a 10 GWh rig will cost you $2M a day (minus one dollar you make).
-
-As for a single Arduino, mining 1 Bitcoin in 2018 takes 2.5 * 10^16 / 150 / 365 ~= 456.6 billion years.
+References:
 
 * https://bitinfocharts.com/comparison/bitcoin-hashrate.html#alltime
 * https://bitinfocharts.com/comparison/bitcoin-price.html#alltime
@@ -179,5 +175,3 @@ requires at least a megabyte of internal memory.
 * https://www.reddit.com/r/arduino/comments/8dshqd/arduino_pro_microbased_usb_bitcoin_miner_150_hs/
 * https://www.quora.com/How-long-would-it-take-to-mine-a-Bitcoin-on-an-AVR-chip-Arduino
 * https://linustechtips.com/main/topic/840241-arduino-bitcoin-miner/
-
-
