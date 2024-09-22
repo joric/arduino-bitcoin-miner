@@ -45,12 +45,41 @@ so every hash takes two 64-byte SHA256 blocks, consdering midstate optimization.
 
 ## What if
 
-According to [Mining Profitability Calculator](https://www.cryptocompare.com/mining/calculator/), mining $1 a day needs 1.5 TH/s, 1 BTC a year needs 42 TH/s (numbers may vary).
+According to [Mining Profitability Calculator](https://www.cryptocompare.com/mining/calculator/), mining $1 a day in 2018 needs 1.5 TH/s, 1 BTC a year needs 42 TH/s (numbers may vary).
 
 * At 150 hashes a second per Arduino, mining one dollar a day would need 10 billion Arduinos
-* Pro Micro consumes 200 mA, mining $1 a day with a 10 billion Arduino rig will need 2 gigawatts of power (Great Scott!)
-* With an average price $0.2 per kWh, 2 gigawatt mining rig will cost you about $10M a day (minus one dollar you make)
-* If you prefer a single AVR chip, mining 1 Bitcoin on ATmega32U4 will theoretically take about 280 billion years
+* Pro Micro consumes 200 mA, mining $1 a day with a 10 billion Arduino rig will need 10 gigawatts of power (Great Scott!)
+* With an average price $0.2 per kWh, 2 gigawatt mining rig will cost you about $2M a day (minus one dollar you make)
+* If you prefer a single AVR chip, mining 1 Bitcoin on ATmega32U4 will theoretically take about 456 billion years.
+
+### 2024 revisit and corrections
+
+* Current network hash rate in 2024: approximately 500 EH/s (500,000,000 TH/s) or 500 * 10^18 h/s.
+* Bitcoins mined daily in 2024: approximately 1000 BTC.
+* Hashes needed for 1 BTC a day: 500 / 1000 * 10^18 = 5 * 10^17 (500 billion) hashes a day.
+* To mine 1 BTC a day in 2024, you need 5 * 10^17 / 150 ~= 3.33 * 10^15 ~= 3.33 quadrillion Arduinos.
+
+It seems weird comparing with 10 billion arduinos per $1 a day in 2018 calculated earlier, let's recalculate:
+
+* Peak network hash rate in 2018 was about 50 EH/s (10 times less than in 2024).
+* Bitcoins mined daily in 2018 were about 2000 BTC a day (2x more).
+* Hashes needed for 1 BTC a day in 2018: 50 / 2000 * 10^18 = 2.5 * 10^16 (25 trillion).
+* To mine 1 BTC a day in 2018, you need 2.5 * 10^16 / 150 ~= 1.667 * 10^14 ~= 166.7 trillion Arduinos.
+
+In 2018, bitcoin price fluctuated from about 15k (Jan 2018) to 4k (Dec 2018), let's use the top price:
+
+* Mining $1 a day in 2018 would need 2.5 * 10^16 / 15000 ~= 1.67 TH/s (matches 1.5 TH/s given earlier).
+* Divide by hash rate to get exact number of devices: 2.5 * 10^16 / 15000 / 150 ~= 11.1 billion Arduinos.
+
+We also need to adjust power for voltage to get energy in Watt/hours:
+
+* Pro Micro consumes 200 mA, or 5V * 0.2A = 1 Wh of energy, so a 10 billion Arduino rig consumes 10 GWh.
+* With an average price of $0.2 per kWh, a 10 GWh rig will cost you $2M a day (minus one dollar you make).
+
+As for a single Arduino, mining 1 Bitcoin in 2018 takes 2.5 * 10^16 / 150 / 365 ~= 456.6 billion years.
+
+* https://bitinfocharts.com/comparison/bitcoin-hashrate.html#alltime
+* https://bitinfocharts.com/comparison/bitcoin-price.html#alltime
 
 ## Emulator
 
