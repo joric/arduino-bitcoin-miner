@@ -51,8 +51,6 @@ According to [Mining Profitability Calculator](https://www.cryptocompare.com/min
 * Pro Micro consumes 200 mA, or 5V * 0.2A = 1 Wh of energy, so a 10 billion Arduino rig consumes 10 GWh.
 * With an average price of $0.2 per kWh, a 10 GWh rig will cost you $2M a day (minus one dollar you make).
 
-As for a single Arduino, mining 1 Bitcoin in 2018 takes 2.5 * 10^16 / 150 / 365 ~= 456.6 billion years.
-
 ### 2024 revisit and corrections
 
 * Current network hash rate in 2024: approximately 500 EH/s (500,000,000 TH/s) or 500 * 10^18 h/s.
@@ -72,7 +70,7 @@ In 2018, bitcoin price fluctuated from about 15k (Jan 2018) to 4k (Dec 2018), le
 * Mining $1 a day in 2018 would need 2.5 * 10^16 / 15000 ~= 1.67 TH/s (matches 1.5 TH/s given earlier).
 * Divide by hash rate to get exact number of devices: 2.5 * 10^16 / 15000 / 150 ~= 11.1 billion Arduinos.
 
-References:
+As for a single Arduino, mining 1 Bitcoin in 2018 takes 2.5 * 10^16 / 150 / 365 ~= 456.6 billion years.
 
 * https://bitinfocharts.com/comparison/bitcoin-hashrate.html#alltime
 * https://bitinfocharts.com/comparison/bitcoin-price.html#alltime
