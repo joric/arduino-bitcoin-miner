@@ -61,7 +61,7 @@ According to [Mining Profitability Calculator](https://www.cryptocompare.com/min
 It seems weird comparing with 10 billion arduinos per $1 a day in 2018 calculated earlier, let's recalculate:
 
 * Peak network hash rate in 2018 was about 50 EH/s (10 times less than in 2024).
-* Bitcoins mined daily in 2018 were about 2000 BTC a day (2x more).
+* Bitcoins mined daily in 2018 were about 2000 BTC a day (2x more than in 2024 before the halving).
 * Hashes needed for 1 BTC a day in 2018: 50 / 2000 * 10^18 = 2.5 * 10^16 (25 trillion).
 * To mine 1 BTC a day in 2018, you need 2.5 * 10^16 / 150 ~= 1.667 * 10^14 ~= 166.7 trillion Arduinos.
 
