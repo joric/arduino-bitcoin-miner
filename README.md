@@ -54,14 +54,14 @@ According to [Mining Profitability Calculator](https://www.cryptocompare.com/min
 ### 2024 revisit and corrections
 
 * Current network hash rate in 2024: approximately 500 EH/s (500,000,000 TH/s) or 500 * 10^18 h/s.
-* Bitcoins mined daily in 2024: approximately 1000 BTC.
-* Hashes needed for 1 BTC a day: 500 / 1000 * 10^18 = 5 * 10^17 (500 billion) hashes a day.
-* To mine 1 BTC a day in 2024, you need 5 * 10^17 / 150 ~= 3.33 * 10^15 ~= 3.33 quadrillion Arduinos.
+* Bitcoins mined daily in 2024: approximately 500 BTC (after the second halving in 19 Apr 2024).
+* Hashes needed for 1 BTC a day: 500 / 500 * 10^18 = 10^18 (1 quintillion or 1000 billion) hashes a day.
+* To mine 1 BTC a day in 2024, you need 10^18 / 150 ~= 6.67 * 10^15 ~= 6.67 quadrillion Arduinos.
 
 It seems weird comparing with 10 billion arduinos per $1 a day in 2018 calculated earlier, let's recalculate:
 
 * Peak network hash rate in 2018 was about 50 EH/s (10 times less than in 2024).
-* Bitcoins mined daily in 2018 were about 2000 BTC a day (2x more, before halving in 19 Apr 2024).
+* Bitcoins mined daily in 2018 were about 2000 BTC a day (4x more than in 2024).
 * Hashes needed for 1 BTC a day in 2018: 50 / 2000 * 10^18 = 2.5 * 10^16 (25 trillion).
 * To mine 1 BTC a day in 2018, you need 2.5 * 10^16 / 150 ~= 1.667 * 10^14 ~= 166.7 trillion Arduinos.
 
