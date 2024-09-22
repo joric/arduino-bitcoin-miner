@@ -70,7 +70,8 @@ In 2018, bitcoin price fluctuated from about 15k (Jan 2018) to 4k (Dec 2018), le
 * Mining $1 a day in hashes a second: 2.5 * 10^16 / 15000 ~= 1.67 TH/s (matches 1.5 TH/s given earlier).
 * Mining $1 a day in Arduinos (150 h/s): 2.5 * 10^16 / 15000 / 150 ~= 11.1 billion Arduinos.
 
-As for a single Arduino, mining 1 Bitcoin in 2018 takes 2.5 * 10^16 / 150 / 365 ~= 456.6 billion years.
+As for a single Arduino, mining 1 Bitcoin in 2018 will take 2.5 * 10^16 / 150 / 365 ~= 456.6 billion years.
+Using 2024 hashrate: 10^18 / 150 / 365 ~= 18.26 trillion years (assuming hashrate doesn't change in the future).
 
 * https://bitinfocharts.com/comparison/bitcoin-hashrate.html#alltime
 * https://bitinfocharts.com/comparison/bitcoin-price.html#alltime
